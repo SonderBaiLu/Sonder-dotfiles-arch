@@ -1,0 +1,15 @@
+# 本地覆盖
+*.local
+*.local.toml
+
+# 缓存
+.cache/
+.local/share/
+
+# 日志
+*.log
+
+# 敏感信息，千万别提交
+.ssh/id_*
+*.token
+secrets*

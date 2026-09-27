@@ -1,6 +1,5 @@
 [general]
 import = ["~/.config/alacritty/themes/catppuccin-frappe.toml"]
-
 # --- 窗口设置 (Window) ---
 [window]
 # 窗口尺寸 (字符数) - 仅在浮动模式下有效

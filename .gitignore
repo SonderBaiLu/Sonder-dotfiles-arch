@@ -9,6 +9,9 @@
 # 日志
 *.log
 
+# Rust 构建产物
+installer/target/
+
 # 敏感信息，千万别提交
 .ssh/id_*
 *.token

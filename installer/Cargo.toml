@@ -1,0 +1,8 @@
+[package]
+name = "sonder-installer"
+version = "0.1.0"
+edition = "2021"
+description = "Sonder-dotfiles-arch 一键部署：依赖检测安装 + 配置部署 + 校验"
+
+[profile.release]
+strip = true

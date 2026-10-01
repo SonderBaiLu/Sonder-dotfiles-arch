@@ -1,0 +1,44 @@
+# /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  #
+# wallust 配置（wallust 3.0+）
+# 由 WallustAwww.sh 在每次换壁纸时调用：从当前壁纸提取色板，
+# 生成 [templates] 里定义的配色模板（hypr 边框色、noctalia 的 qml_color.json）。
+
+# 取色算法（backend）可选：
+#   full - resized - wal - thumb - fastresize - kmeans
+# kmeans = 聚类取主色，结果比简单缩放采样更均衡
+backend = "kmeans"
+
+# 生成/挑选主色时使用的色彩空间：
+#   lab - labmixed - lch - lchmixed
+# labmixed 会把多帧采样混合，色板随壁纸切换更平滑稳定
+color_space = "labmixed"
+
+# 配色方案（palette）：
+#   dark        - 8 个暗色，暗底亮字
+#   dark16      - 同 dark，但用 16 色技巧（见下）
+#   harddark    - 硬色调的暗色方案
+#   harddark16  - harddark + 16 色技巧
+#   light       - 亮底暗字
+#   light16     - light + 16 色技巧
+#   softdark    - softlight 的暗色变体（取最浅色做暗背景）
+#   softdark16  - softdark + 16 色技巧
+#   softlight   - 粉彩亮色，harddark 的对立
+#   softlight16 - softlight + 16 色技巧
+# 16 色技巧：所有方案都填满 color0~15 共 16 色，其中 color1~5 通过
+# 调整不透明度"伪装"出更多层次（terminal 256 色里常用的做法）。
+palette = "dark16"
+
+# 相似颜色的区分阈值（供色彩空间计算）：
+#   1          人眼不可辨
+#   1 - 2      细看可辨
+#   2 - 10     一眼可辨
+#   11 - 49    偏相似而非互补
+#   100        完全互补
+threshold = 11
+
+[templates]
+hypr.template = 'colors-hyprland.conf'
+hypr.target = '~/.config/hypr/wallust/wallust-hyprland.conf'
+
+quickshell.template = 'qml_color.json'
+quickshell.target = '~/.config/quickshell/qml_color.json'

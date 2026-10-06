@@ -68,7 +68,7 @@ cd installer && cargo build --release
   alacritty/          # Alacritty 配置与主题
   wallust/            # 壁纸取色（wallust.toml + templates）
   noctalia/           # Noctalia 外壳调色板
-  nvim/               # LazyVim 配置
+  nvim/               # NvChad 配置
   fish/               # fish shell 配置
   fastfetch/          # fastfetch 配置与 logo
   environment.d/      # systemd 用户会话环境（输入法等变量）

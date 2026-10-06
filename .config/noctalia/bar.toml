@@ -1,0 +1,61 @@
+# noctalia bar 布局与小部件定义（手写配置层，热重载）
+#
+# 注意：GUI 改过的设置保存在 ~/.local/state/noctalia/settings.toml，
+# 该文件加载在后、优先级更高。bar.default.start 已从那边移除、由本文件接管；
+# 其余 [bar.default] 外观项（字体、胶囊、圆角等）仍归 GUI 管理。
+#
+# sysmon 小部件：一个实例只显示一个统计项，同一根 bar 可放多个实例。
+# 采样节奏由 [system.monitor] 全局控制（这里未写即用默认值）。
+
+[bar.default]
+start = [
+    "launcher",
+    "wallpaper",
+    "workspaces",
+    "net-down",
+    "net-up",
+    "cpu",
+    "cpu-temp",
+    "gpu-usage",
+    "gpu-temp",
+]
+
+# 下载速度：auto 单位随 B/s~GB/s 自动缩放；compact 显示 1.2M 而非 1.2 MB/s
+[widget.net-down]
+type = "sysmon"
+stat = "net_rx"
+network_speed_compact = true
+label_min_width = 60
+visualization = "none"
+
+# 上传速度
+[widget.net-up]
+type = "sysmon"
+stat = "net_tx"
+network_speed_compact = true
+label_min_width = 52
+visualization = "none"
+
+# CPU 占用（gauge 环随负载升高向 highlight_color 渐变）
+[widget.cpu]
+type = "sysmon"
+stat = "cpu_usage"
+label_min_width = 40
+
+# CPU 温度（传感器自动探测，本机为 k10temp/Tctl）
+[widget.cpu-temp]
+type = "sysmon"
+stat = "cpu_temp"
+label_min_width = 44
+
+# GPU 占用（混合架构下独显睡眠时自动改报核显）
+[widget.gpu-usage]
+type = "sysmon"
+stat = "gpu_usage"
+label_min_width = 40
+
+# GPU 温度
+[widget.gpu-temp]
+type = "sysmon"
+stat = "gpu_temp"
+label_min_width = 44

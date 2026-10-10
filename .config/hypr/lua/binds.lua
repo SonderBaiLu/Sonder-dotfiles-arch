@@ -25,12 +25,16 @@ hl.bind(MOD .. " + B",      hl.dsp.exec_cmd('xdg-open "https://"'), { descriptio
 hl.bind(MOD .. " + Return", hl.dsp.exec_cmd(M.terminal),            { description = "打开终端" })
 hl.bind(MOD .. " + E",      hl.dsp.exec_cmd(M.files),               { description = "打开文件管理器" })
 
+-- 呼出键沿用 Windows 任务管理器的 Ctrl+Shift+Esc，方便肌肉记忆。
+hl.bind("CTRL + SHIFT + Escape", hl.dsp.exec_cmd("missioncenter"), { description = "系统资源监视器（Mission Center）" })
+
 -- ============================================================
 -- 特色功能 / 附加组件
 -- ============================================================
 
 hl.bind(MOD .. " + ALT + R",       hl.dsp.exec_cmd(sc .. "/Refresh.sh"),     { description = "刷新状态栏和菜单" })
 hl.bind(MOD .. " + ALT + O",       hl.dsp.exec_cmd(sc .. "/ChangeBlur.sh"),  { description = "开启/关闭模糊效果" })
+hl.bind(MOD .. " + ALT + A",       hl.dsp.exec_cmd("hyprctl reload config-only"), { description = "随机切换窗口动效方案" })
 hl.bind(MOD .. " + SHIFT + G",     hl.dsp.exec_cmd(sc .. "/GameMode.sh"),    { description = "开启/关闭游戏模式" })
 hl.bind(MOD .. " + ALT + L",       hl.dsp.exec_cmd(sc .. "/ChangeLayout.sh"),{ description = "切换 Master/Dwindle 窗口布局" })
 hl.bind(MOD .. " + SHIFT + F",     hl.dsp.window.fullscreen(),               { description = "全屏切换" })
@@ -89,6 +93,39 @@ hl.bind(MOD .. " + CTRL + F10", hl.dsp.exec_cmd("hyprctl dispatch movecurrentwor
 hl.bind(MOD .. " + CTRL + F11", hl.dsp.exec_cmd("hyprctl dispatch movecurrentworkspacetomonitor u"), { description = "将工作区移至上方显示器" })
 hl.bind(MOD .. " + CTRL + F12", hl.dsp.exec_cmd("hyprctl dispatch movecurrentworkspacetomonitor d"), { description = "将工作区移至下方显示器" })
 
+-- 焦点直达相邻显示器：方向按显示器几何位置实时计算。
+-- 笔记本内屏名会在 eDP-1/eDP-2 之间随独显直连切换，写死名字不可靠。
+-- focus({monitor=...}) 只接受显示器名，不支持 l/r 方向，故先算出目标名字再跳。
+local function focus_monitor_dir(dir)
+  local cur = hl.get_monitor_at_cursor()
+  if not cur then return end
+  for _, mon in ipairs(hl.get_monitors()) do
+    if mon.name ~= cur.name then
+      local match = (dir == "l" and mon.x + mon.width <= cur.x)
+        or (dir == "r" and mon.x >= cur.x + cur.width)
+      if match then
+        hl.dispatch(hl.dsp.focus({ monitor = mon.name }))
+        return
+      end
+    end
+  end
+end
+
+hl.bind(MOD .. " + SHIFT + comma",  function() focus_monitor_dir("l") end, { description = "焦点跳到左侧显示器" })
+hl.bind(MOD .. " + SHIFT + period", function() focus_monitor_dir("r") end, { description = "焦点跳到右侧显示器" })
+
+-- 交换两块显示器上的活动工作区（把两块屏当前的内容整体对调）。
+hl.bind(MOD .. " + CTRL + F8", function()
+  local cur = hl.get_monitor_at_cursor()
+  if not cur then return end
+  for _, mon in ipairs(hl.get_monitors()) do
+    if mon.name ~= cur.name then
+      hl.dispatch(hl.dsp.workspace.swap_monitors({ monitor1 = cur.name, monitor2 = mon.name }))
+      return
+    end
+  end
+end, { description = "交换两块显示器上的活动工作区" })
+
 -- ============================================================
 -- 系统控制
 -- ============================================================
@@ -109,17 +146,40 @@ hl.bind(MOD .. " + CTRL + Return",  hl.dsp.layout("swapwithmaster"),  { descript
 -- Dwindle 布局专用快捷键
 hl.bind(MOD .. " + P",              hl.dsp.window.pseudo(),           { description = "切换伪平铺模式" })
 
+-- 翻转当前分割方向（横向/纵向），决定下一个窗口在长边还是短边一侧打开。
+-- 仅 Dwindle 生效，Master 布局下为空操作。
+hl.bind(MOD .. " + J",              hl.dsp.layout("togglesplit"),     { description = "翻转 Dwindle 分割方向" })
+
 -- 通用布局快捷键（Master / Dwindle 通用）
 hl.bind(MOD .. " + M",              hl.dsp.exec_cmd("hyprctl dispatch splitratio 0.3"), { description = "设置窗口分割比例为 0.3" })
 
 -- ============================================================
--- 循环切换窗口（合并 Alt+Tab 两条：先切换、再置顶）
+-- Alt+Tab：按最近使用顺序（MRU）切换窗口
+-- cyclenext 是固定焦点环顺序而非最近使用顺序，来回切两个窗口会绕圈；
+-- 这里直接读焦点历史：Alt+Tab 回到上一个焦点窗口，Alt+Shift+Tab 跳到最久未用的窗口。
 -- ============================================================
 
+local function focus_window(win)
+  if win then
+    hl.dispatch(hl.dsp.focus({ window = "address:" .. win.address }))
+    hl.dispatch(hl.dsp.window.bring_to_top())
+  end
+end
+
 hl.bind("ALT + Tab", function()
-  hl.dispatch(hl.dsp.window.cycle_next())
-  hl.dispatch(hl.dsp.window.bring_to_top())
-end, { description = "切换到下一个窗口" })
+  focus_window(hl.get_last_window())
+end, { description = "切换到最近使用的上一个窗口" })
+
+hl.bind("ALT + SHIFT + Tab", function()
+  local oldest, best = nil, -1
+  for _, w in ipairs(hl.get_windows()) do
+    local h = w.focus_history_id or -1
+    if h > best then
+      oldest, best = w, h
+    end
+  end
+  focus_window(oldest)
+end, { description = "切换到最久未使用的窗口" })
 
 -- ============================================================
 -- 多媒体与特殊功能按键（F1-F12 上的功能键）

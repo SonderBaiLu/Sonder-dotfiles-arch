@@ -23,7 +23,6 @@ local vars = {
   {"__GLX_VENDOR_LIBRARY_NAME", "nvidia"},
   {"NVD_BACKEND", "direct"},
   {"GSK_RENDERER", "ngl"},
-  {"GBM_BACKEND", "nvidia-drm"},
   {"__GL_GSYNC_ALLOWED", "1"},
   {"__NV_PRIME_RENDER_OFFLOAD", "1"},
   {"__VK_LAYER_NV_optimus", "NVIDIA_only"},
@@ -33,6 +32,7 @@ local vars = {
   {"QT_IM_MODULE", "fcitx"},
   {"XMODIFIERS", "@im=fcitx"},
   {"INPUT_METHOD", "fcitx5"},
+  {"GDK_BACKEND", "wayland,x11,*"},
 }
 
 for _, item in ipairs(vars) do

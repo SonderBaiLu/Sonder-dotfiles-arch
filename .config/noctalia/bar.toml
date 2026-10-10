@@ -18,6 +18,22 @@ start = [
     "cpu-temp",
     "gpu-usage",
     "gpu-temp",
+    # 插件 tranzem/media-lyrics 的歌词小部件：布局 ID = 作者/插件:条目
+    "qicat/media-lyrics:now-playing",
+]
+# end 原为内置默认值；这里显式声明以把 media 换成歌词小部件（条目 now-playing-right 为本地追加）
+end = [
+    "qicat/media-lyrics:now-playing-right",
+    "tray",
+    "notifications",
+    "clipboard",
+    "network",
+    "bluetooth",
+    "volume",
+    "brightness",
+    "battery",
+    "control-center",
+    "session",
 ]
 
 # 下载速度：auto 单位随 B/s~GB/s 自动缩放；compact 显示 1.2M 而非 1.2 MB/s
@@ -59,3 +75,11 @@ label_min_width = 40
 type = "sysmon"
 stat = "gpu_temp"
 label_min_width = 44
+
+# media-lyrics 歌词小部件：bar 上同步显示当前歌词行
+[widget."qicat/media-lyrics:now-playing"]
+show_lyric_line = true
+
+# 右端实例（条目 now-playing-right 为本地追加到插件清单的第二 widget）
+[widget."qicat/media-lyrics:now-playing-right"]
+show_lyric_line = true

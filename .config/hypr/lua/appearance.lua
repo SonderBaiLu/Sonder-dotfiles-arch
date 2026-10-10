@@ -2,30 +2,10 @@
 --
 -- 主题色取自 Noctalia 静态色板（原 wallust 动态色已被 Noctalia 覆盖，故此处直接写死，
 -- 避免「先由 wallust 上色、再被 Noctalia 覆盖」的无效覆盖）。
-
--- 动画速度单位是 1/10 秒（decisecond），数值越大动画越快。
--- 下面把原 bezier 定义迁移为 hl.curve，把 animation 定义迁移为 hl.animation。
-
-hl.curve("wind", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
-hl.curve("winIn", { type = "bezier", points = { { 0.1, 1.1 }, { 0.1, 1.1 } } })
-hl.curve("winOut", { type = "bezier", points = { { 0.3, -0.3 }, { 0, 1 } } })
-hl.curve("liner", { type = "bezier", points = { { 1, 1 }, { 1, 1 } } })
-hl.curve("overshot", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
-hl.curve("smoothOut", { type = "bezier", points = { { 0.5, 0 }, { 0.99, 0.99 } } })
-hl.curve("smoothIn", { type = "bezier", points = { { 0.5, -0.5 }, { 0.68, 1.5 } } })
-
-hl.animation({ leaf = "windows", enabled = true, speed = 6, bezier = "wind", style = "slide" })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 5, bezier = "winIn", style = "slide" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "smoothOut", style = "slide" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 5, bezier = "wind", style = "slide" })
-hl.animation({ leaf = "border", enabled = true, speed = 1, bezier = "liner" })
--- 注意：borderangle 使用 style="loop" 会让边框角持续渲染，
--- 会提高 CPU/GPU 占用与耗电，仅在需要动态边框角效果时保留。
-hl.animation({ leaf = "borderangle", enabled = true, speed = 100, bezier = "liner", style = "loop" })
-hl.animation({ leaf = "fade", enabled = true, speed = 3, bezier = "smoothOut" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "overshot" })
-hl.animation({ leaf = "workspacesIn", enabled = true, speed = 5, bezier = "winIn", style = "slide" })
-hl.animation({ leaf = "workspacesOut", enabled = true, speed = 5, bezier = "winOut", style = "slide" })
+--
+-- 曲线与动画已迁至 lua/animations/ 下的方案模块，登录与每次 reload 随机选一套，
+-- 可用 Super+Alt+A 随机切换、或在 .pinned 文件里固定方案（见 animations/init.lua）。
+require("lua.animations.init")
 
 -- 静态主题色（Noctalia 色板）。
 -- primary 用于活动边框/输入框外框，surface 用于非活动边框/背景。
@@ -38,7 +18,7 @@ local surface_lowest = "rgb(212232)" -- 更深背景
 
 hl.config({
 	general = {
-		border_size = 1, -- 边框宽度（像素）
+		border_size = 2, -- 边框宽度（像素）：2px 配合活动/非活动配色，保证多窗并排时焦点可辨
 		gaps_in = 2, -- 窗口内边距
 		gaps_out = 4, -- 窗口之间空隙
 

@@ -1,7 +1,8 @@
 # ==========================================
 # Fish Shell 配置（精简版）
 # ==========================================
-
+# --- AI KEY ---
+set -gx DEEPSEEK_API_KEY "sk-3c1b340574454697b37d4971fbd9da34"
 # --- 编辑器 ---
 set -gx EDITOR nvim
 set -gx VISUAL nvim
@@ -18,7 +19,21 @@ set -gx PNPM_HOME "$HOME/.local/share/pnpm"
 if not string match -q -- $PNPM_HOME/bin $PATH
     fish_add_path $PNPM_HOME/bin
 end
+# --- Wine PS ---
+function adobe-wine
+    set -gx WINEPREFIX "$HOME/wine/ps-prefix"
+    set -gx WINEARCH win64
 
+    if not contains "$HOME/wine/wine-adobe/bin" $PATH
+        set -gx PATH "$HOME/wine/wine-adobe/bin" $PATH
+    end
+
+    if test (count $argv) -eq 0
+        wine wineboot --init
+    else
+        wine $argv
+    end
+end
 # --- 现代命令替代 ---
 if type -q eza
     alias ls 'eza --icons --git'

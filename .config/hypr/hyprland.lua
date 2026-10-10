@@ -7,6 +7,7 @@ require("lua.environment")
 require("lua.layout")
 require("lua.appearance")
 require("lua.rules")
+require("lua.behavior")
 require("lua.binds")
 require("lua.startup")
 

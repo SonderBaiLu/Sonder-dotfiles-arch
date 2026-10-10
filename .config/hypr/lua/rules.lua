@@ -132,6 +132,15 @@ hl.window_rule({
   size = { "monitor_w*0.6", "monitor_h*0.7" },
 })
 
+-- 这些应用平铺打开时会先铺满整块平铺区，随后再缩小到应用自己的尺寸，
+-- 视觉上就是「先最大化、再缩小」的闪烁。开窗即浮动，首帧即为应用的记忆尺寸。
+hl.window_rule({ match = { class = "^QQ$" }, float = true, size = { 1677, 1013 } })
+hl.window_rule({ match = { class = "^yesplaymusic$" }, float = true })
+hl.window_rule({ match = { class = "^Frpc-Desktop$" }, float = true })
+hl.window_rule({ match = { class = "^zcode$" }, float = true })
+-- Java 应用不记忆窗口尺寸，额外居中，避免每次开窗位置随机。
+hl.window_rule({ match = { class = "^cpw-mods-bootstraplauncher-BootstrapLauncher$" }, float = true, center = true })
+
 -- 弹窗与对话框（Popup / Dialogue）浮动。
 hl.window_rule({ match = { title = "^Authentication Required$" }, float = true, center = true }) -- 鉴权弹窗
 -- VSCodium / VSCode 子窗口（标题不含主窗口名）浮动。
@@ -177,6 +186,8 @@ hl.window_rule({ match = { tag = "multimedia" }, opacity = "0.94 0.86" })
 hl.window_rule({ match = { tag = "file-manager" }, opacity = "0.9 0.8" })
 hl.window_rule({ match = { tag = "settings" }, opacity = "0.8 0.7" })
 hl.window_rule({ match = { tag = "viewer" }, opacity = "0.82 0.75" })
+-- 图像查看器：图片本身不应透出后方内容，覆盖查看器分类的通用透明度。
+hl.window_rule({ match = { class = "^(eog|org.gnome.Loupe)$" }, opacity = "1.0" })
 hl.window_rule({ match = { tag = "wallpaper" }, opacity = "0.9 0.7" })
 hl.window_rule({ match = { class = "^(gedit|org.gnome.TextEditor|mousepad)$" }, opacity = "0.8 0.7" }) -- 简易文本编辑器
 hl.window_rule({ match = { class = "^deluge$" }, opacity = "0.9 0.8" }) -- BitTorrent 客户端

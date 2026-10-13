@@ -1,8 +1,12 @@
 # ==========================================
 # Fish Shell 配置（精简版）
 # ==========================================
-# --- AI KEY ---
-set -gx DEEPSEEK_API_KEY "sk-3c1b340574454697b37d4971fbd9da34"
+# --- AI KEY 给 Nvim 使用 ---
+# 密钥不入库：真实值放在 ~/.config/fish/secrets.fish（已被 .gitignore 忽略，模板见 secrets.fish.example）
+if test -f ~/.config/fish/secrets.fish
+    source ~/.config/fish/secrets.fish
+end
+set -gx OLLAMA_API_BASE "http://127.0.0.1:11434"
 # --- 编辑器 ---
 set -gx EDITOR nvim
 set -gx VISUAL nvim
@@ -48,8 +52,12 @@ if type -q fd
     alias find fd
 end
 
-alias cp 'cp -i' mv 'mv -i' rm trash # trash-cli 防误删
-alias df 'df -h' du 'du -h -d 1' free 'free -h'
+alias cp 'cp -i'
+alias mv 'mv -i'
+alias rm trash # trash-cli 防误删
+alias df 'df -h'
+alias du 'du -h -d 1'
+alias free 'free -h'
 
 # --- 工具初始化（仅在已安装时加载，启动更快）---
 if type -q starship
@@ -90,9 +98,12 @@ end
 
 # Arch 一键更新
 function update
-    echo "🔄 更新系统..."
-    sudo pacman -Syu --noconfirm
-    type -q yay && yay -Syu --noconfirm
+    echo "正在更新系统(pacman,paru,pnpm)..."
+    if type -q paru
+        paru -Syu --noconfirm --skipreview
+    else
+        sudo pacman -Syu --noconfirm
+    end
     type -q pnpm && pnpm update -g
     echo "✅ 完成"
 end

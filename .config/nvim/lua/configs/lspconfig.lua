@@ -35,7 +35,10 @@ require("nvchad.configs.lspconfig").defaults()
 -- 注意:这里写的是 lspconfig 的服务器名(下划线),不是 mason 包名(连字符)。
 -- rust_analyzer 特殊:用系统 rustup 自带的那份(见 chadrc 的 skip),
 -- 其余的都由 mason 安装:mason 装好后才能启动,首次使用请先 :MasonInstallAll
-local servers = { "html", "cssls", "rust_analyzer", "vue_ls", "vtsls", "unocss", "yamlls" }
+local servers = { "html", "cssls", "rust_analyzer", "vue_ls", "vtsls", "unocss", "yamlls", "marksman" }
+-- marksman = Markdown 语言服务器(二进制由 mason 装,见 chadrc 的 pkgs):
+-- 提供标题跳转(gd 跳到锚点)、校验 [链接](路径) 是否写错、自动维护目录。
+-- 它是目前唯一维护活跃的 markdown LSP,标准配置、无需额外 settings。
 -- SQL 特意没有 LSP:现有选择都不可用(sqlls 已停止维护、sqls 需要 Go 工具链、
 -- sqlfluff 本身不提供 LSP)。SQL 已有 treesitter 语法高亮 + sqlfmt 格式化兜底;
 -- 将来若装了 Go(pacman -S go),在上方列表加回 "sqls" 并在 chadrc 加 "sqls" 即可。

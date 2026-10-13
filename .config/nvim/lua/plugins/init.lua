@@ -48,6 +48,8 @@ return {
 				"css",
 				"yaml",
 				"sql",
+				"markdown",
+				"markdown_inline",
 			},
 		},
 	},

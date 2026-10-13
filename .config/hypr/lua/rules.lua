@@ -248,5 +248,16 @@ hl.window_rule({
   center = true,
   size = { "monitor_w*0.26", "monitor_h*0.18" },
 })
-
+-- 微信 
+hl.window_rule({
+  name = "wechat",
+  match = {
+    class="^wechat$",
+    title = "图片和视频"
+  },
+  float = true,
+  center = true,
+  -- 图片查看器可以稍微大一点，比如屏幕宽度的 70%，高度的 70%
+  size = { "monitor_w*0.7", "monitor_h*0.7" },
+})
 return true

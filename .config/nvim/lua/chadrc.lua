@@ -56,6 +56,7 @@ M.mason = {
     "vtsls", -- TypeScript/JS(也负责 .vue 里的 TS)
     "unocss-language-server", -- UnoCSS 类名补全
     "yaml-language-server", -- YAML
+    "marksman", -- Markdown(标题跳转/链接校验/目录,见 configs/lspconfig.lua)
     -- 格式化器(对应 configs/conform.lua)
     "prettier", -- js/ts/vue/css/html/yaml/json
     "stylua", -- Lua

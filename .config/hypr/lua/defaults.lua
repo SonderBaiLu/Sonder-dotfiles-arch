@@ -3,7 +3,7 @@
 
 local M = {
 	terminal = "alacritty",
-	files = "nautilus",
+	files = "nautilus --new-window",
 	editor = "nvim",
 	main_mod = "SUPER",
 	scripts = os.getenv("HOME") .. "/.config/hypr/scripts",

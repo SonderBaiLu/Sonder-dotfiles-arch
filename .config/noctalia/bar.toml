@@ -8,6 +8,7 @@
 # 采样节奏由 [system.monitor] 全局控制（这里未写即用默认值）。
 
 [bar.default]
+auto_hide = false
 start = [
     "launcher",
     "wallpaper",

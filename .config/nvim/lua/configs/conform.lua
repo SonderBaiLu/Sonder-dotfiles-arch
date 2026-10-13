@@ -29,7 +29,11 @@ local options = {
 		css = { "prettier" },
 		html = { "prettier" },
 		yaml = { "prettier" },
-		json = { "prettier" },
+			json = { "prettier" },
+
+			-- Markdown:复用 prettier —— 自动对齐表格、规范化标题、统一列表缩进;
+			-- prettier 已在 mason 装好,markdown 无需单独的格式化器
+			markdown = { "prettier" },
 
 		-- SQL:选 sqlfmt 因为它零配置可用;
 		-- 另一个常见选择 sqlfluff 功能更强,但必须配置方言(dialect)才能运行

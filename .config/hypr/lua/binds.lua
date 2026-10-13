@@ -44,6 +44,18 @@ hl.bind(MOD .. " + ALT + SPACE",   hl.dsp.exec_cmd("hyprctl dispatch workspaceop
 hl.bind(MOD .. " + SHIFT + Return",hl.dsp.exec_cmd(sc .. "/Dropterminal.sh " .. M.terminal), { description = "下拉式终端" })
 
 -- ============================================================
+-- 连点器（rightclick）：左右键连点开关，再次按同一键即停止。
+-- 每秒点击次数在下面两个常量里改（范围 1–100）。
+-- ============================================================
+
+local clickbin = os.getenv("HOME") .. "/.local/bin/rightclick"
+local CLICK_LEFT_CPS  = 3
+local CLICK_RIGHT_CPS = 3
+
+hl.bind(MOD .. " + L", hl.dsp.exec_cmd(clickbin .. " --left  --rate " .. CLICK_LEFT_CPS),  { description = "左键连点开关" })
+hl.bind(MOD .. " + R", hl.dsp.exec_cmd(clickbin .. " --right --rate " .. CLICK_RIGHT_CPS), { description = "右键连点开关" })
+
+-- ============================================================
 -- Noctalia v5+ 核心外壳快捷键（通过 IPC：noctalia msg）
 -- ============================================================
 

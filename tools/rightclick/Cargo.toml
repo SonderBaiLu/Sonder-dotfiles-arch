@@ -1,8 +1,8 @@
 [package]
 name = "rightclick"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "右键连点器：开关式连点，再次运行即停止；也支持一次性连点（uinput 虚拟鼠标实现）"
+description = "左右键连点器：开关式连点（左键/右键可选、每秒次数可配），再次运行即停止（uinput 虚拟鼠标实现）"
 
 [dependencies]
 evdev = "0.12"

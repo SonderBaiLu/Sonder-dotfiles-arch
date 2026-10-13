@@ -62,6 +62,9 @@ pub const DEPS: &[(&str, bool)] = &[
     ("xdg-desktop-portal-gtk", false),
     ("dbus", false),
     ("systemd", false),
+    // 常用软件 如果你不需要刻意在这里删除掉
+    ("linuxqq",true),
+    ("wechat-bin", true),
 ];
 
 /// 安装单个依赖。返回 true 表示已就绪（已装或装成功）

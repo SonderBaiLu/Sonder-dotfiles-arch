@@ -129,7 +129,6 @@ function ports
 end
 
 # --- 历史 ---
-# 注意：HISTSIZE/SAVEHIST/HISTCONTROL 是 bash/zsh 的变量，fish 不读取，
 # 仅保留备查。fish 的历史持久化在 ~/.local/share/fish/fish_history，默认不限条数。
 set -gx HISTSIZE 10000 SAVEHIST 10000 HISTCONTROL ignoredups:erasedups
 
@@ -140,22 +139,6 @@ abbr -a gc 'git commit -m'
 abbr -a gp 'git push'
 abbr -a .. 'cd ..'
 abbr -a ... 'cd ../..'
-
-# 动态切换 Neovim 配置：fzf 交互选择 default / nvim-react，
-# 非 default 通过 NVIM_APPNAME 隔离成独立配置目录（~/.config/<名字>）
-function nvs
-    set -l items default nvim-react
-    set -l config (string join \n $items | fzf --prompt="Select Neovim Profile: " --height=20% --layout=reverse --border)
-
-    test -z "$config"; and return
-
-    if test "$config" = default
-        nvim $argv
-    else
-        env NVIM_APPNAME=$config nvim $argv
-    end
-end
-
 # 设置默认文本颜色
 set fish_color_normal normal
 # 设置命令颜色

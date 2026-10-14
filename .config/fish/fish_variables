@@ -81,7 +81,7 @@ SETUVAR fish_pager_color_completion:cdd6f4
 SETUVAR fish_pager_color_description:6c7086
 SETUVAR fish_pager_color_prefix:f5c2e7
 SETUVAR fish_pager_color_progress:6c7086
-SETUVAR fish_user_paths:/home/qicat/\x2elocal/bin\x1e/home/qicat/\x2elocal/share/pnpm\x1e/home/qicat/\x2enpm\x2dglobal/bin\x1e/home/qicat/\x2ecargo/bin
+SETUVAR fish_user_paths:/home/qicat/\x2elocal/share/pnpm/bin\x1e/home/qicat/\x2elocal/bin\x1e/home/qicat/\x2elocal/share/pnpm\x1e/home/qicat/\x2enpm\x2dglobal/bin\x1e/home/qicat/\x2ecargo/bin
 SETUVAR sponge_allow_previously_successful:true
 SETUVAR sponge_delay:2
 SETUVAR sponge_filters:sponge_filter_failed\x1esponge_filter_matched

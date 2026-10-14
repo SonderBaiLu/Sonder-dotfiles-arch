@@ -36,7 +36,11 @@ hl.bind(MOD .. " + ALT + R",       hl.dsp.exec_cmd(sc .. "/Refresh.sh"),     { d
 hl.bind(MOD .. " + ALT + O",       hl.dsp.exec_cmd(sc .. "/ChangeBlur.sh"),  { description = "开启/关闭模糊效果" })
 hl.bind(MOD .. " + ALT + A",       hl.dsp.exec_cmd("hyprctl reload config-only"), { description = "随机切换窗口动效方案" })
 hl.bind(MOD .. " + SHIFT + G",     hl.dsp.exec_cmd(sc .. "/GameMode.sh"),    { description = "开启/关闭游戏模式" })
-hl.bind(MOD .. " + ALT + L",       hl.dsp.exec_cmd(sc .. "/ChangeLayout.sh"),{ description = "切换 Master/Dwindle 窗口布局" })
+-- 切换 Master/Dwindle 布局：读取当前布局后切到另一种（原生 Lua，无需脚本）。
+hl.bind(MOD .. " + ALT + L", function()
+  local cur = hl.get_config("general.layout")
+  hl.config({ general = { layout = (cur == "master") and "dwindle" or "master" } })
+end, { description = "切换 Master/Dwindle 窗口布局" })
 hl.bind(MOD .. " + SHIFT + F",     hl.dsp.window.fullscreen(),               { description = "全屏切换" })
 hl.bind(MOD .. " + CTRL + F",      hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "最大化窗口 (保留状态栏)" })
 hl.bind(MOD .. " + SPACE",         hl.dsp.window.float(),                    { description = "浮动当前窗口" })
@@ -72,6 +76,10 @@ hl.bind(MOD .. " + CTRL + ALT + B",hl.dsp.exec_cmd("noctalia msg bar-toggle"),  
 hl.bind(MOD .. " + ALT + E",       hl.dsp.exec_cmd('noctalia msg panel-toggle launcher "/emo "'),  { description = "Emoji 快速选择器" })
 hl.bind(MOD .. " + ALT + C",       hl.dsp.exec_cmd('noctalia msg panel-toggle launcher "/calc "'), { description = "快速计算器 / 汇率换算" })
 hl.bind(MOD .. " + CTRL + S",      hl.dsp.exec_cmd('noctalia msg panel-toggle launcher "/win "'),  { description = "正在运行的窗口快速跳转" })
+
+-- 快捷键速查表 / 备忘便签（Noctalia 插件面板）
+hl.bind(MOD .. " + slash",         hl.dsp.exec_cmd("noctalia msg panel-toggle qicat/keybind-cheatsheet:cheatsheet"), { description = "快捷键速查表" })
+hl.bind(MOD .. " + ALT + N",       hl.dsp.exec_cmd("noctalia msg panel-toggle noctalia/notes:panel"),              { description = "备忘便签" })
 
 -- ============================================================
 -- 桌面缩放 / 放大镜（改用 Lua 函数，避免每次 spawn 子进程）

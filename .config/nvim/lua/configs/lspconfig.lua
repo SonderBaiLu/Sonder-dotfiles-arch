@@ -79,7 +79,15 @@ vim.lsp.config("vtsls", {
 	-- 默认只认 ts/js 文件;加上 "vue" 才会附加到 .vue 缓冲区上
 	filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
 })
-
+vim.lsp.config("rust_analyzer",{
+  settings = {
+    ["rust-analyzer"] = {
+      check = {
+        command = "clippy"
+      }
+    }
+  }
+})
 vim.lsp.enable(servers)
 
 -- ------------------------------------------------------------
@@ -107,5 +115,16 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		map("n", "<leader>wl", function()
 			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
 		end, opts "列出工作目录")
+    -- 获取客户端对象
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client:supports_method("textDocument/inlayHint") then
+      -- 默认在当前缓冲区启用内联类型提示
+      vim.lsp.inlay_hint.enable(true,{bufnr = args.buf})
+      -- 注册 <leader>lh 快捷键用于动态反转当前缓冲区的内联提示状态
+      map("n", "<leader>lh", function()
+        local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf })
+        vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = args.buf })
+      end, opts "切换内联类型提示 (Inlay Hints)")
+    end
 	end,
 })

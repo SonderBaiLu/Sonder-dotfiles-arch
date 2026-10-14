@@ -28,10 +28,9 @@ tag("class", "^(zen-alpha|zen)$", "browser") -- Zen 浏览器
 
 -- 通知中心：noctalia 的通知为 layer-shell 覆盖层，不产生常规窗口，无需规则
 
--- KooL 配置工具（标签名统一为连字符形式）
-tag("title", "^KooL Quick Cheat Sheet$", "KooL-Cheat")   -- 快捷键参考表
-tag("title", "^KooL Hyprland Settings$", "KooL-Settings") -- 设置面板
-tag("class", "^(nwg-displays|nwg-look)$", "KooL-Settings") -- 显示器/外观管理
+-- 显示器/外观管理工具（nwg-displays / nwg-look），归入 settings 标签，
+-- 沿用统一的浮动 + 居中 + 尺寸规则。
+tag("class", "^(nwg-displays|nwg-look)$", "settings")
 
 -- 终端
 tag("class", "^Alacritty$", "terminal")
@@ -112,13 +111,10 @@ hl.window_rule({ match = { tag = "multimedia" }, opacity = "1.0" })
 -- 浮动规则（FLOAT）
 -- ============================================================
 
--- 设置 / 查看器 / 壁纸 / KooL 面板统一浮动并居中。
+-- 设置 / 查看器 / 壁纸统一浮动并居中。
 hl.window_rule({ match = { tag = "settings" }, float = true, center = true })
-hl.window_rule({ match = { title = "^Keybindings$" }, center = true }) -- 快捷键参考窗口居中（由快捷键脚本打开）
 hl.window_rule({ match = { tag = "viewer" }, float = true, center = true })
 hl.window_rule({ match = { tag = "wallpaper" }, float = true, center = true })
-hl.window_rule({ match = { tag = "KooL-Cheat" }, float = true, center = true })
-hl.window_rule({ match = { tag = "KooL-Settings" }, float = true, center = true })
 
 -- 指定应用浮动。
 hl.window_rule({ match = { class = "^([Zz]oom|onedriver|onedriver-launcher)$" }, float = true }) -- 会议 / OneDrive
@@ -199,7 +195,6 @@ hl.window_rule({ match = { title = "^Picture-in-Picture$" }, opacity = "0.95 0.7
 -- 使用 monitor_w / monitor_h 表示显示器宽高比例
 -- ============================================================
 
-hl.window_rule({ match = { tag = "KooL-Cheat" }, size = { "monitor_w*0.65", "monitor_h*0.9" } }) -- 快捷键参考
 hl.window_rule({ match = { tag = "wallpaper" }, size = { "monitor_w*0.7", "monitor_h*0.7" } }) -- 壁纸选择器
 hl.window_rule({ match = { tag = "settings" }, size = { "monitor_w*0.7", "monitor_h*0.7" } }) -- 设置窗口
 

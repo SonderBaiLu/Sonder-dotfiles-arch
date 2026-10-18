@@ -14,7 +14,7 @@ local M = {}
 -- base46 内置的 catppuccin 即 Catppuccin mocha(深色)变体。
 -- 想换主题:按 <leader>th 打开选择器可实时预览,选中后写回这里。
 M.base46 = {
-  theme = "catppuccin",
+  theme = "chadracula",
 
   -- 透明背景:nvim 不再自己画编辑区背景色,而是透出终端(alacritty)的
   -- 背景与透明度。这同时解决两个问题:

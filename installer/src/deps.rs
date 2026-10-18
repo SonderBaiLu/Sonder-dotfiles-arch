@@ -30,6 +30,11 @@ pub const DEPS: &[(&str, bool)] = &[
     // 终端 / shell
     ("alacritty", false),
     ("fish", false),
+    // 仓库自带配置的应用：不装包的话，符号链接指向的是空目录
+    ("neovim", false),
+    ("yazi", false),
+    // 终端字体：alacritty.toml 指定 JetBrainsMono Nerd Font
+    ("ttf-jetbrains-mono-nerd", false),
     // 音频 / 亮度 / 蓝牙
     ("pipewire", false),
     ("wireplumber", false),
@@ -54,6 +59,8 @@ pub const DEPS: &[(&str, bool)] = &[
     ("noto-fonts-emoji", false),
     // 基础工具
     ("jq", false),
+    // verify 用 luac -p 校验 Lua，缺了只能跳过
+    ("lua", false),
     ("fastfetch", false),
     ("xdg-user-dirs", false),
     ("xdg-utils", false),

@@ -10,23 +10,30 @@ Arch Linux dotfiles：Hyprland（原生 Lua 配置）+ Alacritty。
 
 ## 一键部署
 
+全新 Arch（或 EndeavourOS）上 clone 本仓库后，直接运行：
+
 ```bash
-# 构建（需要 rustc / cargo）
+./bootstrap.sh
+```
+
+它会依次完成：检查并安装构建依赖（`base-devel` / `git` / `rust`）→ 编译 `sonder-installer` →
+只读预检 → 完整部署（驱动 + 依赖 + 本地工具 + 符号链接 + 校验）→ 写入 tty1 自动启动 Hyprland 的登录片段。
+
+已有 rust 环境时也可以手动走原流程：
+
+```bash
 cd installer && cargo build --release
-
-# 完整流程：依赖安装 + 符号链接 + 校验
-./installer/target/release/sonder-installer
-
-# 非交互模式：失败直接跳过并记录日志
-./installer/target/release/sonder-installer --yes
+./installer/target/release/sonder-installer all      # 完整流程
+./installer/target/release/sonder-installer --yes    # 非交互，失败直接跳过
 ```
 
 ### 子命令
 
 | 命令          | 作用                                                            |
 | ------------- | --------------------------------------------------------------- |
-| `all`（默认） | deps + stow + verify 完整流程                                   |
+| `all`（默认） | deps + tools + stow + verify 完整流程                           |
 | `deps`        | 仅驱动与软件依赖检测安装                                        |
+| `tools`       | 构建 `tools/` 内的小工具并安装到 `~/.local/bin`，补 `input` 组  |
 | `stow`        | 为 `.config/` 下每个目录创建 `~/.config` 符号链接               |
 | `unstow`      | 移除指向本仓库的符号链接（指向外部的不动）                      |
 | `verify`      | 仅语法与运行时校验                                              |
@@ -53,8 +60,12 @@ cd installer && cargo build --release
 1. **驱动检测**：`lspci` 识别显卡（NVIDIA / AMD / Intel），缺失驱动自动安装
 2. **依赖检测**：检查 `DEPS` 清单，缺失则安装（官方仓库走 `sudo pacman`，AUR 包走 `paru`；无 paru 时自动从 AUR 构建安装）
 3. **失败处理**：安装失败时提示 `R=重试 / S=跳过 / Q=退出`；跳过与失败项全部写入日志
-4. **stow**：`.config/` 下每个目录 → `~/.config` 符号链接；目标是真实目录时先备份为 `<名字>.bak-<时间戳>` 再替换
-5. **校验**：`luac -p` 检查 Lua、`bash -n` 检查脚本、`hyprctl reload config-only` + `configerrors` 检查运行时配置
+4. **本地工具**：编译 `tools/rightclick` 并安装到 `~/.local/bin`；不在 `input` 组时自动加入（需重新登录生效）
+5. **stow**：`.config/` 下每个目录 → `~/.config` 符号链接；目标是真实目录时先备份为 `<名字>.bak-<时间戳>` 再替换
+6. **校验**：`luac -p` 检查 Lua、`bash -n` 检查脚本、`hyprctl reload config-only` + `configerrors` 检查运行时配置
+
+`bootstrap.sh` 额外写入 `~/.bash_profile` 的登录片段（带 `>>> sonder-hyprland-autostart >>>` 标记）：
+在 tty1 登录时自动 `exec start-hyprland`，其它 TTY 保留纯 shell 便于排障；删掉该段即可恢复手动启动。
 
 日志位置：`~/.local/state/sonder-dotfiles/install.log`
 
@@ -63,6 +74,7 @@ cd installer && cargo build --release
 ## 目录结构
 
 ```
+bootstrap.sh          # 全新系统引导：装构建依赖 → 编译 → 部署 → 登录片段
 .config/
   hypr/               # Hyprland 原生 Lua 配置（入口 hyprland.lua，模块在 lua/）
   alacritty/          # Alacritty 配置与主题
@@ -71,6 +83,7 @@ cd installer && cargo build --release
   nvim/               # NvChad 配置
   fish/               # fish shell 配置
   fastfetch/          # fastfetch 配置与 logo
+  fcitx5/             # 输入法配置（profile / config / conf，不含运行时缓存）
   environment.d/      # systemd 用户会话环境（输入法等变量）
 installer/            # Rust 部署工具（cargo build --release）
   src/
@@ -78,10 +91,23 @@ installer/            # Rust 部署工具（cargo build --release）
     state.rs          # 运行时状态、日志、命令执行、汇总
     util.rs           # 通用小工具（时间/PATH 查找/相对路径等）
     deps.rs           # 驱动与软件依赖检测安装（DEPS 清单在此）
+    tools.rs          # 构建并安装 tools/ 内小工具
     stow.rs           # stow / unstow 符号链接管理
     verify.rs         # 语法与运行时校验
     preflight.rs      # check 只读预检
+tools/
+  rightclick/         # 连点器（binds.lua 调用 ~/.local/bin/rightclick）
 ```
+
+## 重装系统后的还原步骤
+
+1. `git clone git@github.com:SonderBaiLu/Sonder-dotfiles-arch.git ~/Sonder-dotfiles-arch`
+2. `cd ~/Sonder-dotfiles-arch && ./bootstrap.sh`
+3. 重建 `~/.config/fish/secrets.fish`（模板见 `secrets.fish.example`，未入库）
+4. 重新登录（`input` 组生效），从 tty1 登录即自动进入 Hyprland
+
+仓库外的内容需要自行恢复：`/etc/fstab`（btrfs 子卷、`/mnt/数据`、NFS）、启用的 systemd 服务与用户组、
+`~/.config/fish/secrets.fish`、壁纸（`~/Pictures/wallpapers`）。
 
 ## 维护提示
 

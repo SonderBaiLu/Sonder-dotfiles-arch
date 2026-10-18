@@ -1,8 +1,9 @@
 //! Sonder-dotfiles-arch 一键部署工具
 //!
 //! 子命令：
-//!   （无）/ all   完整流程：deps + stow + verify
+//!   （无）/ all   完整流程：deps + tools + stow + verify
 //!   deps         仅驱动与软件依赖检测安装
+//!   tools        构建仓库内小工具并安装到 ~/.local/bin
 //!   stow         为仓库 .config/ 下每个目录创建 ~/.config 符号链接
 //!   unstow       移除指向本仓库的符号链接
 //!   verify       仅语法与运行时校验
@@ -10,11 +11,13 @@
 //!
 //! 安装失败时交互选择 重试/跳过/退出；所有失败与跳过项写入日志。
 //! 用法：sonder-installer [命令] [--yes]（--yes 非交互，失败直接跳过）
+//! 全新系统请先运行仓库根目录的 bootstrap.sh（安装构建依赖后再编译本工具）。
 
 mod deps;
 mod preflight;
 mod state;
 mod stow;
+mod tools;
 mod util;
 mod verify;
 
@@ -84,6 +87,7 @@ fn main() {
 
     match command.as_str() {
         "deps" => deps::check_deps(&mut st),
+        "tools" => tools::install_tools(&mut st),
         "stow" => stow::stow(&mut st),
         "unstow" => stow::unstow(&mut st),
         "verify" => verify::verify(&mut st),
@@ -91,11 +95,12 @@ fn main() {
         "all" => {
             deps::check_drivers(&mut st);
             deps::check_deps(&mut st);
+            tools::install_tools(&mut st);
             stow::stow(&mut st);
             verify::verify(&mut st);
         }
         other => {
-            eprintln!("[错误] 未知命令: {}（可用: all / deps / stow / unstow / verify / check）", other);
+            eprintln!("[错误] 未知命令: {}（可用: all / deps / tools / stow / unstow / verify / check）", other);
             std::process::exit(1);
         }
     }

@@ -12,6 +12,9 @@
 # 备份文件
 *.bak-*
 
+# fcitx5 运行时缓存（每次启动按当前键盘布局重新生成）
+.config/fcitx5/conf/cached_layouts
+
 # Rust 构建产物
 installer/target/
 tools/*/target/

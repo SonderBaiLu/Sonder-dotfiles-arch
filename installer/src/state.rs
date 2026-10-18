@@ -2,7 +2,7 @@
 
 use std::fs;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::util::now;
@@ -55,6 +55,29 @@ impl State {
     pub fn run_capture(&self, program: &str, args: &[&str]) -> Option<String> {
         let out = Command::new(program).args(args).output().ok()?;
         Some(String::from_utf8_lossy(&out.stdout).to_string())
+    }
+
+    /// 同 run_logged，但在指定目录下执行（构建仓库内工具时用）
+    pub fn run_logged_in(&self, dir: &Path, program: &str, args: &[&str]) -> bool {
+        let mut f = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.log_file)
+            .unwrap();
+        let _ = writeln!(f, "---- $ (cd {}) {} {}", dir.display(), program, args.join(" "));
+        let status = Command::new(program)
+            .args(args)
+            .current_dir(dir)
+            .stdout(f.try_clone().unwrap())
+            .stderr(std::process::Stdio::inherit())
+            .status();
+        match status {
+            Ok(s) => s.success(),
+            Err(e) => {
+                let _ = writeln!(f, "执行失败: {}", e);
+                false
+            }
+        }
     }
 }
 

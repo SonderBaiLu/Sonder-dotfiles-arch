@@ -17,7 +17,7 @@ decorations = "Full"
 
 # 不透明度 (0.0 完全透明 - 1.0 完全不透明)
 # 略微透出壁纸，同时维持代码与文本的对比度
-opacity = 0.96
+opacity = 1.0
 blur = true
 
 # 启动模式

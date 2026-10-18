@@ -49,8 +49,8 @@ hl.config({
 
 		blur = {
 			enabled = true,
-			size = 2, -- 模糊内核大小
-			passes = 4, -- 模糊通道数
+			size = 4, -- 模糊内核大小
+			passes = 8, -- 模糊通道数
 			new_optimizations = true, -- 启用新版模糊优化
 			xray = true, -- 穿透模糊
 			ignore_opacity = true, -- 忽略窗口透明度

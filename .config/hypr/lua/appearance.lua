@@ -49,8 +49,8 @@ hl.config({
 
 		blur = {
 			enabled = true,
-			size = 4, -- 模糊内核大小
-			passes = 8, -- 模糊通道数
+			size = 1, -- 模糊内核大小
+			passes = 2, -- 模糊通道数
 			new_optimizations = true, -- 启用新版模糊优化
 			xray = true, -- 穿透模糊
 			ignore_opacity = true, -- 忽略窗口透明度
@@ -76,6 +76,20 @@ hl.config({
 			},
 		},
 	},
+})
+
+-- Noctalia 图层模糊：状态栏 / 通知 / 面板 / OSD / 窗口切换器等 layer-shell 表面。
+-- decoration.blur 只作用于普通窗口，图层必须单独用 layer_rule 才会被模糊。
+-- no_anim 关掉 Hyprland 自带的图层动画，避免和 Noctalia 自己的动画叠加。
+hl.layer_rule({
+	name = "noctalia",
+	match = {
+		namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd|window-switcher)$",
+	},
+	no_anim = true,
+	ignore_alpha = 0.5,
+	blur = true,
+	blur_popups = true,
 })
 
 return true

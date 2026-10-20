@@ -12,3 +12,6 @@ require("lua.binds")
 require("lua.startup")
 
 
+
+-- For Noctalia Color templates
+require("noctalia").apply_theme()

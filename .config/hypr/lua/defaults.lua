@@ -20,6 +20,17 @@ hl.monitor({ output = "eDP-2", mode = "2560x1440@160", position = "auto", scale 
 -- 在不使用独显直连的情况下 笔记本内屏id 会变成 eDP-1
 hl.monitor({ output = "eDP-1", mode = "2560x1440@160", position = "auto", scale = 1.0 })
 
+-- 持久工作区：空工作区也常驻，Noctalia 状态栏的工作区指示器才能完整显示。
+-- 刻意不写 monitor：工作区可自由跟随 Super+Ctrl+F9~F12 在双屏之间搬运，
+-- 不会被规则钉回原显示器。1-5 带名字（显示在状态栏上），6-10 用纯数字。
+local named_workspaces = { "web", "code", "chat", "game", "design" }
+for i, name in ipairs(named_workspaces) do
+	hl.workspace_rule({ workspace = tostring(i), persistent = true, default_name = name })
+end
+for i = 6, 10 do
+	hl.workspace_rule({ workspace = tostring(i), persistent = true })
+end
+
 -- 默认编辑器同时注入环境，供终端应用与外部脚本读取。
 hl.env("EDITOR", M.editor)
 

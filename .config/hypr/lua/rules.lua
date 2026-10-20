@@ -243,7 +243,7 @@ hl.window_rule({
   center = true,
   size = { "monitor_w*0.26", "monitor_h*0.18" },
 })
--- 微信 
+-- 微信
 hl.window_rule({
   name = "wechat",
   match = {
@@ -253,6 +253,15 @@ hl.window_rule({
   float = true,
   center = true,
   -- 图片查看器可以稍微大一点，比如屏幕宽度的 70%，高度的 70%
+  size = { "monitor_w*0.7", "monitor_h*0.7" },
+})
+-- VLC：双击视频文件开窗即按微信查看器的规格浮动播放（浮动 + 居中 + 屏幕 70%×70%）。
+-- size 为静态规则只在开窗时生效一次，VLC 自身记住的窗口几何会被这里覆盖。
+hl.window_rule({
+  name = "vlc",
+  match = { class = "^vlc$" },
+  float = true,
+  center = true,
   size = { "monitor_w*0.7", "monitor_h*0.7" },
 })
 return true

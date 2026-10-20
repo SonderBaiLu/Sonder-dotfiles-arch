@@ -48,6 +48,7 @@ preview = { fg = "#1e1e2e", bg = "#cdd6f4" }
 [status]
 sep_left  = { open = "", close = "" }
 sep_right = { open = "", close = "" }
+overall   = { fg = "#cdd6f4" }
 
 progress_label  = { fg = "#ffffff", bold = true }
 progress_normal = { fg = "#a6e3a1", bg = "#45475a" }

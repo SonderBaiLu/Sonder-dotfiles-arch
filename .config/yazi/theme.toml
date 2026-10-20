@@ -1,11 +1,6 @@
 [app]
 overall = { bg = "#1e1e2e" }
 
-# 圆角边框，观感更柔和
-[mgr]
-border_symbol = "│"
-border_style  = { fg = "#45475a" }
-
 [mgr]
 cwd = { fg = "#94e2d5" }
 

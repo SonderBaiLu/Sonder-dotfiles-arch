@@ -1,14 +1,14 @@
 {
   "schemaVersion": "mimosa-hook-status/v1",
-  "recordedAt": "2026-10-20T03:18:42.930Z",
+  "recordedAt": "2026-10-20T03:29:42.954Z",
   "sessionId": "sess_2743548a-dd64-48ef-a673-c848aefd719f",
   "event": "PostToolUse",
-  "toolName": "Edit",
-  "file": "/home/qicat/.config/hypr/lua/rules.lua",
+  "toolName": "Write",
+  "file": "/home/qicat/.zcode/cli/memories/projects/hypr-0116d413acfaff19/memory/vlc-hybrid-gpu-greenscreen.md",
   "outcome": "clear",
   "coverage": "complete",
   "findingCount": 0,
-  "durationMs": 3,
+  "durationMs": 2,
   "hostState": "hook_complete",
   "reportHint": ".mimosa/reports/"
 }

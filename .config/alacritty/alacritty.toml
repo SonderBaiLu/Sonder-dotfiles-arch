@@ -1,6 +1,7 @@
 [general]
-import = ["~/.config/alacritty/themes/catppuccin-frappe.toml"]
-# --- 窗口设置 (Window) ---
+import = ["~/.config/alacritty/themes/noctalia.toml"]
+
+
 [window]
 # 窗口尺寸 (字符数) - 仅在浮动模式下有效
 dimensions = { columns = 110, lines = 32 }

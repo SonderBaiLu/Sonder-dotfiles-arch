@@ -336,19 +336,19 @@ hl.bind(MOD .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, descripti
 -- ============================================================
 
 -- 键盘背光亮度（可重复）
-hl.bind("XF86KbdBrightnessDown", hl.dsp.exec_cmd(sc .. "/BrightnessKbd.sh --dec"), { repeating = true })
-hl.bind("XF86KbdBrightnessUp",   hl.dsp.exec_cmd(sc .. "/BrightnessKbd.sh --inc"), { repeating = true })
+hl.bind("XF86KbdBrightnessDown", hl.dsp.exec_cmd(sc .. "/BrightnessKbd.sh --dec"), { repeating = true, description = "键盘背光调暗" })
+hl.bind("XF86KbdBrightnessUp",   hl.dsp.exec_cmd(sc .. "/BrightnessKbd.sh --inc"), { repeating = true, description = "键盘背光调亮" })
 
 -- 华硕 ROG 专用按键
-hl.bind("XF86Launch1", hl.dsp.exec_cmd("rog-control-center"))
-hl.bind("XF86Launch3", hl.dsp.exec_cmd("asusctl led-mode -n"))
-hl.bind("XF86Launch4", hl.dsp.exec_cmd("asusctl profile -n"))
+hl.bind("XF86Launch1", hl.dsp.exec_cmd("rog-control-center"),     { description = "华硕控制中心" })
+hl.bind("XF86Launch3", hl.dsp.exec_cmd("asusctl led-mode -n"),    { description = "ROG 灯效切换" })
+hl.bind("XF86Launch4", hl.dsp.exec_cmd("asusctl profile -n"),     { description = "性能模式切换" })
 
 -- 屏幕亮度（可重复）
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(sc .. "/Brightness.sh --dec"), { repeating = true })
-hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd(sc .. "/Brightness.sh --inc"), { repeating = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(sc .. "/Brightness.sh --dec"), { repeating = true, description = "屏幕亮度调暗" })
+hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd(sc .. "/Brightness.sh --inc"), { repeating = true, description = "屏幕亮度调亮" })
 
 -- 触控板开关
-hl.bind("XF86TouchpadToggle", hl.dsp.exec_cmd(sc .. "/TouchPad.sh"))
+hl.bind("XF86TouchpadToggle", hl.dsp.exec_cmd(sc .. "/TouchPad.sh"), { description = "触控板开关" })
 
 return true

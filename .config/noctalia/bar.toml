@@ -28,6 +28,8 @@ end = [
     "tray",
     "notifications",
     "clipboard",
+    # linux-fertxo/hyprland-visual-editor 入口：点开动画/边框/着色器可视化面板
+    "linux-fertxo/hyprland-visual-editor:hve-trigger",
     "network",
     "bluetooth",
     "volume",

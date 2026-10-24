@@ -886,5 +886,5 @@ exts = [
 # 若想启用此 flavor，请清空 theme.toml 中的配色项。
 # 当前默认不启用，交由 theme.toml 统一管理。
 [flavor]
-dark = ""
-light = ""
+dark = "noctalia"
+light = "noctalia"

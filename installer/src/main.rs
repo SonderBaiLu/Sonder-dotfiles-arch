@@ -14,6 +14,7 @@
 //! 全新系统请先运行仓库根目录的 bootstrap.sh（安装构建依赖后再编译本工具）。
 
 mod deps;
+mod plugins;
 mod preflight;
 mod state;
 mod stow;
@@ -96,6 +97,7 @@ fn main() {
         "tools" => tools::install_tools(&mut st),
         "stow" => stow::stow(&mut st),
         "unstow" => stow::unstow(&mut st),
+        "plugins" => plugins::ensure_local_plugins(&mut st),
         "verify" => verify::verify(&mut st),
         "check" => preflight::preflight(&mut st),
         "all" => {
@@ -115,6 +117,7 @@ fn main() {
                 ("依赖安装", deps::check_deps),
                 ("本地工具", tools::install_tools),
                 ("符号链接", stow::stow),
+                ("本地插件", plugins::ensure_local_plugins),
                 ("校验", verify::verify),
             ];
             for (name, run) in stages {
@@ -147,7 +150,7 @@ fn main() {
             }
         }
         other => {
-            eprintln!("[错误] 未知命令: {}（可用: all / deps / tools / stow / unstow / verify / check）", other);
+            eprintln!("[错误] 未知命令: {}（可用: all / deps / tools / stow / unstow / plugins / verify / check）", other);
             std::process::exit(1);
         }
     }

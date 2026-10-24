@@ -46,6 +46,7 @@ cd installer && cargo build --release
 | `tools`       | 构建 `tools/` 内的小工具并安装到 `~/.local/bin`，补 `input` 组  |
 | `stow`        | 为 `.config/` 下每个目录创建 `~/.config` 符号链接               |
 | `unstow`      | 移除指向本仓库的符号链接（指向外部的不动）                      |
+| `plugins`     | noctalia 本地插件落位：建链接 + 注册 settings.toml（幂等）      |
 | `verify`      | 仅语法与运行时校验                                              |
 | `check`       | **只读预检**：不改动任何文件，提前发现正式运行会遇到的冲突/缺失 |
 
@@ -75,7 +76,8 @@ cd installer && cargo build --release
 3. **失败处理**：安装失败时提示 `R=重试 / S=跳过 / Q=退出`；跳过与失败项全部写入日志
 4. **本地工具**：编译 `tools/rightclick` 并安装到 `~/.local/bin`；不在 `input` 组时自动加入（需重新登录生效）
 5. **stow**：`.config/` 下每个目录 → `~/.config` 符号链接；目标是真实目录时先备份为 `<名字>.bak-<时间戳>` 再替换
-6. **校验**：`luac -p` 检查 Lua、`bash -n` 检查脚本、`hyprctl reload config-only` + `configerrors` 检查运行时配置
+6. **本地插件**：`system/noctalia-local-plugins/` 各插件 → `~/.local/share/noctalia-local-plugins/` 符号链接，并在 noctalia `settings.toml` 注册 local 源与启用清单（详见 [system/noctalia-local-plugins/README.md](system/noctalia-local-plugins/README.md)）
+7. **校验**：`luac -p` 检查 Lua、`bash -n` 检查脚本、`hyprctl reload config-only` + `configerrors` 检查运行时配置
 
 `bootstrap.sh` 额外写入 `~/.bash_profile` 的登录片段（带 `>>> sonder-hyprland-autostart >>>` 标记）：
 在 tty1 登录时自动 `exec start-hyprland`，其它 TTY 保留纯 shell 便于排障；删掉该段即可恢复手动启动。
@@ -115,6 +117,7 @@ tools/
   rightclick/         # 连点器（binds.lua 调用 ~/.local/bin/rightclick）
 system/
   grub-catppuccin/    # GRUB Catppuccin Frappé 主题（sudo bash system/grub-catppuccin/install.sh 安装，--revert 回滚）
+  noctalia-local-plugins/  # noctalia 本地插件 fork（速查面板 SUPER+/ 与状态栏歌词；修改/更新指南见其 README.md）
 ```
 
 ## 重装系统后的还原步骤
@@ -132,6 +135,7 @@ system/
 ## 维护提示
 
 - 新增应用配置：把 `~/.config/<应用>` 放进仓库 `.config/`，跑 `stow` 即生效
+- noctalia 本地插件（SUPER+/ 速查面板、状态栏歌词）：改什么、怎么重载、重装与上游更新——见 [system/noctalia-local-plugins/README.md](system/noctalia-local-plugins/README.md)
 - 修改依赖清单：`installer/src/deps.rs` 顶部的 `DEPS` 数组（`包名, 是否AUR`）
 - 修改 Hyprland 配置后用 `hyprctl reload config-only` 生效，`hyprctl configerrors` 检查错误
 - Hyprland 升级后跑 `hyprpm update` 按新版本重建插件，重启 Hyprland 生效

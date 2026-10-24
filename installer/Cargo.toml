@@ -7,6 +7,7 @@ description = "Sonder-dotfiles-arch 一键部署：依赖检测安装 + 配置�
 [dependencies]
 ratatui = "0.29"
 crossterm = "0.28"
+toml = "0.8"
 
 [profile.release]
 strip = true

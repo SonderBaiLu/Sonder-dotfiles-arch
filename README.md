@@ -49,6 +49,8 @@ cd installer && cargo build --release
 | `verify`      | 仅语法与运行时校验                                              |
 | `check`       | **只读预检**：不改动任何文件，提前发现正式运行会遇到的冲突/缺失 |
 
+附加开关：`--yes` 非交互（失败直接跳过）；`--no-tui` 禁用全屏界面（见下）。
+
 ### 预检（check）
 
 正式部署前先跑 `check`，把会报错的点提前暴露出来：
@@ -67,6 +69,7 @@ cd installer && cargo build --release
 
 ### 流程说明
 
+0. **交互界面（TUI）**：`all` 在真实终端下自动进入全屏部署界面——顶部阶段条（驱动 → 依赖 → 工具 → stow → 校验）、实时日志窗格、依赖安装进度条；`Q`/`Esc` 请求取消（在阶段与包之间生效，不打断正在运行的安装器），完成屏按任意确认键或 10 秒后自动关闭，结束发桌面通知。`--no-tui`、管道重定向或 `--yes` 时输出带色纯文本日志。
 1. **驱动检测**：`lspci` 识别显卡（NVIDIA / AMD / Intel），缺失驱动自动安装
 2. **依赖检测**：检查 `DEPS` 清单，缺失则安装（官方仓库走 `sudo pacman`，AUR 包走 `paru`；无 paru 时自动从 AUR 构建安装）
 3. **失败处理**：安装失败时提示 `R=重试 / S=跳过 / Q=退出`；跳过与失败项全部写入日志
@@ -268,7 +271,8 @@ hyprland.lua
 
 | 文件 | 职责 |
 | --- | --- |
-| `main.rs` | 参数解析 + 子命令分发：`all`（默认）/ `deps` / `tools` / `stow` / `unstow` / `verify` / `check` |
+| `main.rs` | 参数解析 + 子命令分发：`all`（默认）/ `deps` / `tools` / `stow` / `unstow` / `verify` / `check`；`all` 在真实终端下调度全屏 TUI |
+| `tui.rs` | 全屏部署界面（ratatui）：阶段条 / 实时日志 / 进度条 / 取消键 / 完成屏；管道与 `--no-tui` 自动回落纯文本 |
 | `deps.rs` | **`DEPS` 清单在此**（格式 `("包名", 是否AUR)`）+ 显卡驱动自动检测（NVIDIA/AMD/Intel）+ paru 自举 |
 | `tools.rs` | 编译 `tools/` 内小工具装到 `~/.local/bin`，补 `input` 组 |
 | `stow.rs` | 为 `.config/` 下每个条目（目录或单文件，跳过 `.` 开头）建符号链接；目标已是真实目录则先备份为 `<名>.bak-<时间戳>` |

@@ -23,6 +23,8 @@ pub struct State {
     pub installed: Vec<String>,
     pub skipped: Vec<String>,
     pub failed: Vec<String>,
+    /// 全屏 TUI 界面（仅 `all` 在真实终端下启用）；None = 纯文本模式。
+    pub tui: Option<crate::tui::TuiHandle>,
 }
 
 /// 终端着色：按行首标签/符号/横幅给消息上色。
@@ -84,14 +86,21 @@ fn paint_inline(msg: &str) -> Option<String> {
 }
 
 impl State {
-    /// 打印一行日志并追加到日志文件（终端带色，文件纯文本）
+    /// TUI 下用户是否按了取消键（部署在阶段/包之间检查）。
+    pub fn cancelled(&self) -> bool {
+        self.tui.as_ref().map(|t| t.cancelled()).unwrap_or(false)
+    }
+
+    /// 打印一行日志并追加到日志文件（终端带色，文件纯文本）。
+    /// TUI 模式下不直接写 stdout（会打花界面），改发给界面日志窗格。
     pub fn log(&self, msg: &str) {
         let stamped = format!("[{}] {}", now(), msg);
-        if std::io::stdout().is_terminal() {
-            // 终端上时间戳压暗，正文走 paint 的标签着色。
-            println!("{}[{}]{} {}", DIM, now(), RESET, paint(msg));
-        } else {
-            println!("{}", stamped);
+        match &self.tui {
+            Some(t) => t.log(msg),
+            None if std::io::stdout().is_terminal() => {
+                println!("{}[{}]{} {}", DIM, now(), RESET, paint(msg));
+            }
+            None => println!("{}", stamped),
         }
         let mut f = fs::OpenOptions::new()
             .create(true)
@@ -109,6 +118,27 @@ impl State {
             .open(&self.log_file)
             .unwrap();
         let _ = writeln!(f, "---- $ {} {}", program, args.join(" "));
+        if self.tui.is_some() {
+            // TUI：整段捕获输出，结束后写入日志文件并送界面窗格，
+            // 避免子进程输出打花全屏界面（界面侧的进度条承担过程反馈）。
+            return match Command::new(program).args(args).output() {
+                Ok(out) => {
+                    for half in [&out.stdout, &out.stderr] {
+                        for line in String::from_utf8_lossy(half).lines() {
+                            let _ = writeln!(f, "{}", line);
+                            if let Some(t) = &self.tui {
+                                t.log(line);
+                            }
+                        }
+                    }
+                    out.status.success()
+                }
+                Err(e) => {
+                    let _ = writeln!(f, "执行失败: {}", e);
+                    false
+                }
+            };
+        }
         let status = Command::new(program)
             .args(args)
             .stdout(f.try_clone().unwrap())
@@ -137,6 +167,26 @@ impl State {
             .open(&self.log_file)
             .unwrap();
         let _ = writeln!(f, "---- $ (cd {}) {} {}", dir.display(), program, args.join(" "));
+        if self.tui.is_some() {
+            // TUI：同 run_logged 的整段捕获策略。
+            return match Command::new(program).args(args).current_dir(dir).output() {
+                Ok(out) => {
+                    for half in [&out.stdout, &out.stderr] {
+                        for line in String::from_utf8_lossy(half).lines() {
+                            let _ = writeln!(f, "{}", line);
+                            if let Some(t) = &self.tui {
+                                t.log(line);
+                            }
+                        }
+                    }
+                    out.status.success()
+                }
+                Err(e) => {
+                    let _ = writeln!(f, "执行失败: {}", e);
+                    false
+                }
+            };
+        }
         let status = Command::new(program)
             .args(args)
             .current_dir(dir)

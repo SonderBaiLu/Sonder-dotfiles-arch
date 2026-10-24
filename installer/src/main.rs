@@ -17,16 +17,20 @@ mod deps;
 mod preflight;
 mod state;
 mod stow;
+mod tui;
 mod tools;
 mod util;
 mod verify;
 
 use std::env;
 use std::fs;
+use std::io::IsTerminal;
 use std::path::PathBuf;
+use std::process::Command;
 use std::time::Instant;
 
 use state::{summary, State};
+use util::command_exists;
 
 /// 仓库目录：从可执行文件位置向上查找包含 .config/ 的目录，找不到则用当前目录
 fn locate_repo_dir() -> PathBuf {
@@ -54,6 +58,7 @@ fn locate_repo_dir() -> PathBuf {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let non_interactive = args.iter().any(|a| a == "--yes");
+    let no_tui = args.iter().any(|a| a == "--no-tui");
     let command = args
         .iter()
         .skip(1)
@@ -79,6 +84,7 @@ fn main() {
         installed: Vec::new(),
         skipped: Vec::new(),
         failed: Vec::new(),
+        tui: None,
     };
 
     let t0 = Instant::now();
@@ -93,11 +99,52 @@ fn main() {
         "verify" => verify::verify(&mut st),
         "check" => preflight::preflight(&mut st),
         "all" => {
-            deps::check_drivers(&mut st);
-            deps::check_deps(&mut st);
-            tools::install_tools(&mut st);
-            stow::stow(&mut st);
-            verify::verify(&mut st);
+            // 全屏 TUI 只给完整部署用：真实终端 + 非 --yes + 未加 --no-tui。
+            let use_tui = std::io::stdout().is_terminal() && !non_interactive && !no_tui;
+            if use_tui {
+                // 先在普通终端缓存 sudo 凭据——密码提示不能出现在全屏界面里。
+                let sudo_ok = Command::new("sudo").arg("-v").status().map(|s| s.success()).unwrap_or(false);
+                st.tui = tui::TuiHandle::spawn();
+                st.log("[INFO] 已进入交互部署界面：Q 请求取消（阶段/包之间生效），失败项自动跳过");
+                if !sudo_ok {
+                    st.log("[WARN] sudo 凭据缓存失败：需要安装的包会被跳过，可退出后重新运行");
+                }
+            }
+            let stages: &[(&str, fn(&mut State))] = &[
+                ("驱动检测", deps::check_drivers),
+                ("依赖安装", deps::check_deps),
+                ("本地工具", tools::install_tools),
+                ("符号链接", stow::stow),
+                ("校验", verify::verify),
+            ];
+            for (name, run) in stages {
+                if st.cancelled() {
+                    st.log("[WARN] 收到取消请求，跳过剩余阶段");
+                    break;
+                }
+                if let Some(t) = &st.tui {
+                    t.phase_start(name);
+                }
+                let before = st.failed.len();
+                run(&mut st);
+                if let Some(t) = &st.tui {
+                    t.phase_end(name, st.failed.len() == before && !st.cancelled());
+                }
+            }
+            summary(&st);
+            let ok = st.failed.is_empty() && !st.cancelled();
+            if let Some(t) = st.tui.take() {
+                t.finish_and_wait(ok);
+            }
+            // 桌面通知：部署耗时较长，人不在终端前也能得知结果。
+            if command_exists("notify-send") {
+                let (icon, text) = if ok {
+                    ("dialog-information", "Sonder 桌面部署完成")
+                } else {
+                    ("dialog-warning", "Sonder 部署有失败/跳过项，详见日志")
+                };
+                let _ = Command::new("notify-send").args(["-i", icon, "Sonder 部署", text]).output();
+            }
         }
         other => {
             eprintln!("[错误] 未知命令: {}（可用: all / deps / tools / stow / unstow / verify / check）", other);

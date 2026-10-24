@@ -125,9 +125,9 @@ fn install_dep(st: &mut State, pkg: &str, aur: bool) -> bool {
         return true;
     }
 
-    // 失败：交互选择 重试 / 跳过 / 退出
+    // 失败：交互选择 重试 / 跳过 / 退出（TUI 模式下无法读 stdin，直接跳过并记录）
     loop {
-        if st.non_interactive || !is_tty() {
+        if st.non_interactive || st.tui.is_some() || !is_tty() {
             st.log(&format!("[FAIL] {} 安装失败（非交互模式，跳过）", pkg));
             st.failed.push(pkg.to_string());
             return false;
@@ -226,15 +226,25 @@ fn ensure_paru(st: &mut State) {
 /// 软件依赖检测与安装
 pub fn check_deps(st: &mut State) {
     st.log("==================== 软件依赖检测 ====================");
-    // 缓存 sudo 凭据，后续安装免重复输密码（paru 内部也会调用 sudo）
-    if !st.non_interactive && is_tty() {
+    // 缓存 sudo 凭据，后续安装免重复输密码（paru 内部也会调用 sudo）；
+    // TUI 模式下凭据已在进入界面前由 main 预缓存（密码提示不能出现在全屏界面里）。
+    if !st.non_interactive && is_tty() && st.tui.is_none() {
         st.log("[INFO] 缓存 sudo 凭据（如已缓存则直接通过）");
         if !st.run_logged("sudo", &["-v"]) {
             st.log("[WARN] sudo 凭据缓存失败，安装步骤可能中断");
         }
     }
     ensure_paru(st);
-    for (pkg, aur) in DEPS {
+    let total = DEPS.len();
+    for (index, (pkg, aur)) in DEPS.iter().enumerate() {
+        // 取消请求在包之间生效，不打断正在运行的安装器。
+        if st.cancelled() {
+            st.log("[WARN] 收到取消请求，剩余依赖全部跳过");
+            break;
+        }
+        if let Some(t) = &st.tui {
+            t.progress(index, total, pkg);
+        }
         install_dep(st, pkg, *aur);
     }
 }

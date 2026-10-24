@@ -13,6 +13,7 @@ lua/
   appearance.lua        # 主题色、动画曲线、边框、装饰、阴影、模糊、窗口组
   rules.lua             # 窗口规则（tag 归类 + 浮动/透明/尺寸等）
   binds.lua             # 快捷键绑定
+  plugins.lua           # hyprpm 权限与 hypr-dynamic-cursors 配置
   startup.lua           # 开机启动项
 hypridle.conf           # 空闲管理（触发 noctalia 锁屏 / 休眠 / 关屏）
 initial-boot.sh         # 首次进系统的精装脚本（壁纸配色、深色模式等）
@@ -31,6 +32,7 @@ scripts/                # 被绑定的各类辅助脚本
 - 调整主题色：改 `lua/appearance.lua`。
 - 增减窗口规则：改 `lua/rules.lua`。
 - 增减快捷键：改 `lua/binds.lua`。
+- 光标动态效果：改 `lua/plugins.lua`（当前为 tilt + shake-to-find）。
 - 修改后用 `hyprctl reload config-only` 使配置生效，并用 `hyprctl configerrors` 检查解析错误。
 - 校验脚本语法：`luac -p hyprland.lua`（Lua）、`bash -n scripts/xxx.sh`（shell）。
 

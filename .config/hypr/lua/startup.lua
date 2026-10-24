@@ -3,6 +3,9 @@
 -- 回调内只做一次性派发；hl.exec_cmd 会转到子进程执行，不会阻塞合成器事件循环。
 
 hl.on("hyprland.start", function()
+	-- 加载 hyprpm 管理的插件，再重读一次配置以应用插件专属选项。
+	hl.exec_cmd("hyprpm reload && hyprctl reload config-only")
+
 	-- 壁纸守护进程，由 noctalia 壁纸模块调度
 	hl.exec_cmd("awww-daemon --format xrgb")
 

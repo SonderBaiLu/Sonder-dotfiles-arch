@@ -1,0 +1,135 @@
+# 本副本改自 kenn/keybind-cheatsheet 0.3.0，仅修 Lua 配置扫描的 CPU 预算问题并改 ID。
+#
+# 上游 0.3.0 把整棵 Hyprland Lua 配置树的分类扫描放在单个 state-watch 回调里做，
+# 中大型配置会超出 Noctalia 的 Luau CPU 预算（约 25ms）被中断，刷新永远走不完，
+# 面板停在「Reading keybinds…」。此处把扫描改为逐文件、逐行分片（luaScanStep），
+# 每个分片独占一个新预算窗口，与既有的 decode/build/categorize 分片同法。
+#
+# 打开面板：  noctalia msg panel-toggle qicat/keybind-cheatsheet:cheatsheet
+
+id = "qicat/keybind-cheatsheet"
+name = "Keybind Cheatsheet"
+version = "0.3.0"
+plugin_api = 9
+author = "kenn"
+license = "MIT"
+dependencies = ["hyprctl"]
+tags = ["bar", "panel", "utility", "system", "hyprland", "mangowc", "niri"]
+icon = "keyboard"
+description = "Searchable keybindings for Mango, Hyprland, and Niri."
+
+[[service]]
+id = "data"
+entry = "service.luau"
+
+[[setting]]
+key = "compositor"
+type = "select"
+label_key = "settings.compositor.label"
+description_key = "settings.compositor.description"
+default = "auto"
+options = [
+  { value = "auto", label_key = "settings.compositor.options.auto" },
+  { value = "mango", label_key = "settings.compositor.options.mango" },
+  { value = "hyprland", label_key = "settings.compositor.options.hyprland" },
+  { value = "niri", label_key = "settings.compositor.options.niri" },
+]
+
+[[setting]]
+key = "mango_config"
+type = "file"
+label_key = "settings.mango_config.label"
+description_key = "settings.mango_config.description"
+default = "~/.config/mango/config.conf"
+
+[[setting]]
+key = "hyprland_config"
+type = "file"
+label_key = "settings.hyprland_config.label"
+description_key = "settings.hyprland_config.description"
+default = "~/.config/hypr/hyprland.conf"
+
+[[setting]]
+key = "hyprland_lua_config"
+type = "file"
+label_key = "settings.hyprland_lua_config.label"
+description_key = "settings.hyprland_lua_config.description"
+default = "~/.config/hypr/hyprland.lua"
+
+[[setting]]
+key = "hyprland_parser"
+type = "select"
+label_key = "settings.hyprland_parser.label"
+description_key = "settings.hyprland_parser.description"
+default = "auto"
+options = [
+  { value = "auto", label_key = "settings.hyprland_parser.options.auto" },
+  { value = "lua", label_key = "settings.hyprland_parser.options.lua" },
+  { value = "conf", label_key = "settings.hyprland_parser.options.conf" },
+]
+
+[[setting]]
+key = "niri_config"
+type = "file"
+label_key = "settings.niri_config.label"
+description_key = "settings.niri_config.description"
+default = "~/.config/niri/config.kdl"
+
+[[setting]]
+key = "columns"
+type = "int"
+label_key = "settings.columns.label"
+description_key = "settings.columns.description"
+default = 4
+min = 1
+max = 4
+step = 1
+
+[[setting]]
+key = "show_undescribed"
+type = "bool"
+label_key = "settings.show_undescribed.label"
+description_key = "settings.show_undescribed.description"
+default = true
+
+[[setting]]
+key = "show_actions"
+type = "bool"
+label_key = "settings.show_actions.label"
+description_key = "settings.show_actions.description"
+default = false
+
+[[setting]]
+key = "merge_sequential"
+type = "bool"
+label_key = "settings.merge_sequential.label"
+description_key = "settings.merge_sequential.description"
+default = true
+
+[[setting]]
+key = "modifier_labels"
+type = "string_map"
+label_key = "settings.modifier_labels.label"
+description_key = "settings.modifier_labels.description"
+default = {}
+
+[[panel]]
+id = "cheatsheet"
+entry = "panel.luau"
+# 浮动居中面板尺寸：2560 宽屏下左右各留约 180px，不再有大片空白。
+width = 2200
+height = 980
+placement = "floating"
+position = "center"
+open_near_click = true
+
+[[widget]]
+id = "keybinds"
+entry = "widget.luau"
+
+  [[widget.setting]]
+  key = "glyph"
+  type = "glyph"
+  label_key = "settings.glyph.label"
+  description_key = "settings.glyph.description"
+  default = "keyboard"

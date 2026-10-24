@@ -20,6 +20,10 @@ function M.apply()
 	hl.animation({ leaf = "workspaces", enabled = true, speed = 1, bezier = "snapQ", style = "slide" })
 	hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1, bezier = "snapQ", style = "slide" })
 	hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1, bezier = "snapQ", style = "slide" })
+	-- noctalia 面板层：同样瞬时到位，不拖泥带水。
+	hl.animation({ leaf = "layers", enabled = true, speed = 1, bezier = "snapQ", style = "slidefade" })
+	hl.animation({ leaf = "layersIn", enabled = true, speed = 1, bezier = "snapQ", style = "slidefade" })
+	hl.animation({ leaf = "layersOut", enabled = true, speed = 1, bezier = "snapQ", style = "slidefade" })
 end
 
 return M

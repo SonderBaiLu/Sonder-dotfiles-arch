@@ -24,6 +24,10 @@ function M.apply()
 	hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "dropIn", style = "slidevert" })
 	hl.animation({ leaf = "workspacesIn", enabled = true, speed = 5, bezier = "dropIn", style = "slidevert" })
 	hl.animation({ leaf = "workspacesOut", enabled = true, speed = 4, bezier = "dropOut", style = "slidevert" })
+	-- noctalia 面板层：竖向滑入滑出，强化"落下"的方向感。
+	hl.animation({ leaf = "layers", enabled = true, speed = 4, bezier = "dropIn", style = "slidevert" })
+	hl.animation({ leaf = "layersIn", enabled = true, speed = 5, bezier = "dropIn", style = "slidevert" })
+	hl.animation({ leaf = "layersOut", enabled = true, speed = 4, bezier = "dropOut", style = "slidevert" })
 end
 
 return M

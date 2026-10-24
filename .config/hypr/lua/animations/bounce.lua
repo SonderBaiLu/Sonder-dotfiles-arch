@@ -15,7 +15,7 @@ function M.apply()
 	hl.animation({ leaf = "windows", enabled = true, speed = 4, spring = "boing", style = "slide" })
 	-- 新开窗口以 90% 缩放弹入。
 	hl.animation({ leaf = "windowsIn", enabled = true, speed = 4, spring = "boing", style = "popin 90%" })
-	hl.animation({ leaf = "windowsOut", enabled = true, speed = 2, bezier = "settle", style = "slidefade" })
+	hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "settle", style = "popout 85%" })
 	hl.animation({ leaf = "windowsMove", enabled = true, speed = 4, spring = "boing", style = "slide" })
 	hl.animation({ leaf = "border", enabled = true, speed = 1, bezier = "flat" })
 	hl.animation({ leaf = "borderangle", enabled = false })
@@ -23,6 +23,10 @@ function M.apply()
 	hl.animation({ leaf = "workspaces", enabled = true, speed = 5, spring = "boing", style = "slide" })
 	hl.animation({ leaf = "workspacesIn", enabled = true, speed = 5, spring = "boing", style = "slide" })
 	hl.animation({ leaf = "workspacesOut", enabled = true, speed = 4, bezier = "settle", style = "slide" })
+	-- noctalia 面板层：滑入带回弹，收走速战速决。
+	hl.animation({ leaf = "layers", enabled = true, speed = 3, spring = "boing", style = "slidefade" })
+	hl.animation({ leaf = "layersIn", enabled = true, speed = 4, spring = "boing", style = "slidefade" })
+	hl.animation({ leaf = "layersOut", enabled = true, speed = 2, bezier = "settle", style = "slidefade" })
 end
 
 return M

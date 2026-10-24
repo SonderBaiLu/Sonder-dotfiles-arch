@@ -18,11 +18,15 @@ function M.apply()
 	hl.animation({ leaf = "windowsMove", enabled = true, speed = 5, bezier = "veilIn", style = "slidefade" })
 	hl.animation({ leaf = "border", enabled = true, speed = 2, bezier = "flat" })
 	hl.animation({ leaf = "borderangle", enabled = false })
-	hl.animation({ leaf = "fade", enabled = true, speed = 4, bezier = "veilOut" })
+	hl.animation({ leaf = "fade", enabled = true, speed = 5, bezier = "veilOut" })
 	-- 工作区用纯 fade，两个工作区交叉淡入淡出，没有滑动。
 	hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "veilOut", style = "fade" })
 	hl.animation({ leaf = "workspacesIn", enabled = true, speed = 5, bezier = "veilIn", style = "fade" })
 	hl.animation({ leaf = "workspacesOut", enabled = true, speed = 5, bezier = "veilOut", style = "fade" })
+	-- noctalia 面板层：与工作区一致，纯交叉淡入淡出，安静不抢戏。
+	hl.animation({ leaf = "layers", enabled = true, speed = 5, bezier = "veilOut", style = "fade" })
+	hl.animation({ leaf = "layersIn", enabled = true, speed = 5, bezier = "veilIn", style = "fade" })
+	hl.animation({ leaf = "layersOut", enabled = true, speed = 4, bezier = "veilOut", style = "fade" })
 end
 
 return M

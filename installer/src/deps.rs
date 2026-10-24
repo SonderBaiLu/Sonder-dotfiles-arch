@@ -72,13 +72,18 @@ pub const DEPS: &[(&str, bool)] = &[
     ("dbus", false),
     ("systemd", false),
     // 办公 / 媒体 / 系统监视（仓库均有对应配置或快捷键绑定）
-    ("libreoffice-still", false),
-    ("libreoffice-still-zh-cn", false),
     ("vlc", false),
     ("mission-center", false),
-    // 常用软件 如果你不需要刻意在这里删除掉
-    ("linuxqq",true),
-    ("wechat-bin", true),
+];
+
+/// 可选软件清单：非必要的大件（聊天 / 办公），由 bootstrap.sh 部署前交互询问，
+/// 或命令行 `--optional <key,...>` 指定（all=全部）；未选中的不安装、预检也不报缺失。
+/// 格式：(选择 key, 中文说明, 包名, 是否 AUR)；同一 key 可对应多个包。
+pub const OPTIONAL_DEPS: &[(&str, &str, &str, bool)] = &[
+    ("wechat", "微信", "wechat-bin", true),
+    ("qq", "QQ", "linuxqq", true),
+    ("office", "LibreOffice 办公套件（含中文语言包）", "libreoffice-still", false),
+    ("office", "LibreOffice 中文语言包", "libreoffice-still-zh-cn", false),
 ];
 
 /// 安装单个依赖。返回 true 表示已就绪（已装或装成功）
@@ -235,8 +240,24 @@ pub fn check_deps(st: &mut State) {
         }
     }
     ensure_paru(st);
-    let total = DEPS.len();
-    for (index, (pkg, aur)) in DEPS.iter().enumerate() {
+
+    // 核心清单 + 已选中的可选软件；未选中的可选包不安装也不提示。
+    let keys: Vec<&str> = st.optional.iter().map(|s| s.as_str()).collect();
+    let selected: Vec<(&str, bool)> = OPTIONAL_DEPS
+        .iter()
+        .filter(|(key, _, _, _)| keys.contains(key))
+        .map(|(_, _, pkg, aur)| (*pkg, *aur))
+        .collect();
+    let list: Vec<(&str, bool)> = DEPS.iter().copied().chain(selected).collect();
+    if st.optional.is_empty() {
+        st.log("[INFO] 可选软件（微信/QQ/LibreOffice）未选择，跳过");
+    } else {
+        let names: Vec<&str> = list[DEPS.len()..].iter().map(|(p, _)| *p).collect();
+        st.log(&format!("[INFO] 已选可选软件: {}", names.join(", ")));
+    }
+
+    let total = list.len();
+    for (index, (pkg, aur)) in list.iter().enumerate() {
         // 取消请求在包之间生效，不打断正在运行的安装器。
         if st.cancelled() {
             st.log("[WARN] 收到取消请求，剩余依赖全部跳过");

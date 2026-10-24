@@ -10,7 +10,10 @@
 //!   check        只读预检：不改动任何文件，提前发现正式运行会遇到的冲突/缺失
 //!
 //! 安装失败时交互选择 重试/跳过/退出；所有失败与跳过项写入日志。
-//! 用法：sonder-installer [命令] [--yes]（--yes 非交互，失败直接跳过）
+//! 用法：sonder-installer [命令] [--yes] [--optional wechat,qq,office]
+//!   --yes      非交互，失败直接跳过
+//!   --optional 可选软件选择（wechat/QQ/LibreOffice 等，逗号分隔；all=全装，缺省=不装）；
+//!              bootstrap.sh 部署前交互询问后转发到这里
 //! 全新系统请先运行仓库根目录的 bootstrap.sh（安装构建依赖后再编译本工具）。
 
 mod deps;
@@ -60,6 +63,36 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let non_interactive = args.iter().any(|a| a == "--yes");
     let no_tui = args.iter().any(|a| a == "--no-tui");
+    // --optional <key,...>：可选软件选择（见 deps.rs 的 OPTIONAL_DEPS）。
+    let optional: Vec<String> = match args.iter().position(|a| a == "--optional") {
+        Some(i) => args
+            .get(i + 1)
+            .map(|v| v.split(',').map(|s| s.trim().to_lowercase()).filter(|s| !s.is_empty()).collect())
+            .unwrap_or_default(),
+        None => Vec::new(),
+    };
+    let optional: Vec<String> = if optional.iter().any(|k| k == "all") {
+        deps::OPTIONAL_DEPS.iter().map(|(k, _, _, _)| k.to_string()).collect()
+    } else if optional.iter().any(|k| k == "none") {
+        Vec::new()
+    } else {
+        optional
+    };
+    // 去重后的可用 key，用于校验与报错提示（同一 key 可对应多个包）
+    let mut valid_keys: Vec<&str> = Vec::new();
+    for (k, _, _, _) in deps::OPTIONAL_DEPS {
+        if !valid_keys.contains(&k) {
+            valid_keys.push(k);
+        }
+    }
+    if let Some(bad) = optional.iter().find(|k| !valid_keys.contains(&k.as_str())) {
+        eprintln!(
+            "[错误] --optional 未知项: {}（可用: {}，或 all）",
+            bad,
+            valid_keys.join("/")
+        );
+        std::process::exit(1);
+    }
     let command = args
         .iter()
         .skip(1)
@@ -82,6 +115,7 @@ fn main() {
         repo_dir,
         log_file: log_dir.join("install.log"),
         non_interactive,
+        optional,
         installed: Vec::new(),
         skipped: Vec::new(),
         failed: Vec::new(),

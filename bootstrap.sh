@@ -4,8 +4,9 @@
 # 全新 Arch 上先补齐构建依赖（base-devel / git / rust），再编译并运行 sonder-installer，
 # 最后安装 tty1 自动进入 Hyprland 的登录片段。
 #
-# 用法: ./bootstrap.sh [all|deps|tools|stow|unstow|verify|check] [--yes]
-#       不带参数 = all（驱动 + 依赖 + 工具 + 符号链接 + 校验）
+# 用法: ./bootstrap.sh [all|deps|tools|stow|unstow|plugins|verify|check] [--yes] [--optional wechat,qq,office]
+#       不带参数 = all（驱动 + 依赖 + 工具 + 符号链接 + 校验），
+#       部署前会询问要安装哪些可选软件（微信/QQ/LibreOffice；回车=不装）
 
 set -euo pipefail
 
@@ -39,10 +40,48 @@ info "构建 sonder-installer"
 INSTALLER="$REPO_DIR/installer/target/release/sonder-installer"
 [ -x "$INSTALLER" ] || die "构建失败：$INSTALLER 不存在"
 
+# ---- 2.5 可选软件选择（非必要大件，按需安装）----
+# 仅在默认全量部署 + 交互终端时询问；显式传参或 --yes 时跳过询问，
+# 可选软件由命令行 --optional 直接指定（缺省=不装）。
+OPT_ARGS=()
+if [ $# -eq 0 ] && [ -t 0 ]; then
+	echo
+	echo "可选软件（非必要大件，不选就跳过）："
+	echo "  1) 微信        wechat-bin"
+	echo "  2) QQ          linuxqq"
+	echo "  3) LibreOffice 办公套件（含中文语言包）"
+	printf '要安装哪些？输入编号（如 1,3 / all 全装 / 直接回车=不装）: '
+	read -r opt_choice
+	keys=""
+	if [ -n "$opt_choice" ]; then
+		case "$opt_choice" in
+			all|ALL) keys="all" ;;
+			*)
+				IFS=',' read -ra _nums <<< "$opt_choice"
+				for n in "${_nums[@]}"; do
+					n="${n//[[:space:]]/}"
+					case "$n" in
+						1) keys="${keys:+$keys,}wechat" ;;
+						2) keys="${keys:+$keys,}qq" ;;
+						3) keys="${keys:+$keys,}office" ;;
+						all|ALL) keys="all"; break ;;
+					esac
+				done
+				;;
+		esac
+	fi
+	if [ -n "$keys" ]; then
+		OPT_ARGS=(--optional "$keys")
+		info "可选软件: $keys"
+	else
+		info "可选软件: 不安装（可随时手动 paru -S wechat-bin 等）"
+	fi
+fi
+
 # ---- 3. 部署 ----
 if [ $# -eq 0 ]; then
 	info "只读预检"
-	"$INSTALLER" check || die "预检发现冲突，已中止（先处理上面的 [冲突] 项）"
+	"$INSTALLER" check "${OPT_ARGS[@]}" || die "预检发现冲突，已中止（先处理上面的 [冲突] 项）"
 fi
 
 info "运行部署"
@@ -50,7 +89,7 @@ status=0
 if [ $# -gt 0 ]; then
 	"$INSTALLER" "$@" || status=$?
 else
-	"$INSTALLER" all || status=$?
+	"$INSTALLER" all "${OPT_ARGS[@]}" || status=$?
 fi
 
 # ---- 3.5 Hyprland 插件（hyprpm 管理）----

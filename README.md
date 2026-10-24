@@ -26,7 +26,7 @@ Arch Linux dotfiles：Hyprland（原生 Lua 配置）+ Noctalia 外壳 + Alacrit
 ```
 
 它会依次完成：检查并安装构建依赖（`base-devel` / `git` / `rust`）→ 编译 `sonder-installer` →
-只读预检 → 完整部署（驱动 + 依赖 + 本地工具 + 符号链接 + 校验）→ 安装 hyprpm 插件（hypr-dynamic-cursors）→
+询问可选软件（微信 / QQ / LibreOffice，回车跳过）→ 只读预检 → 完整部署（驱动 + 依赖 + 本地工具 + 符号链接 + 校验）→ 安装 hyprpm 插件（hypr-dynamic-cursors）→
 写入 tty1 自动启动 Hyprland 的登录片段。
 
 已有 rust 环境时也可以手动走原流程：
@@ -35,6 +35,7 @@ Arch Linux dotfiles：Hyprland（原生 Lua 配置）+ Noctalia 外壳 + Alacrit
 cd installer && cargo build --release
 ./installer/target/release/sonder-installer all      # 完整流程
 ./installer/target/release/sonder-installer --yes    # 非交互，失败直接跳过
+./installer/target/release/sonder-installer all --optional wechat,office   # 带可选软件
 ```
 
 ### 子命令
@@ -50,7 +51,9 @@ cd installer && cargo build --release
 | `verify`      | 仅语法与运行时校验                                              |
 | `check`       | **只读预检**：不改动任何文件，提前发现正式运行会遇到的冲突/缺失 |
 
-附加开关：`--yes` 非交互（失败直接跳过）；`--no-tui` 禁用全屏界面（见下）。
+附加开关：`--yes` 非交互（失败直接跳过）；`--no-tui` 禁用全屏界面（见下）；
+`--optional wechat,qq,office` 选择可选软件（逗号分隔，`all` 全装，缺省**不装**——
+微信/QQ/LibreOffice 这类非必要大件由部署者按需决定，`bootstrap.sh` 交互模式会先询问）。
 
 ### 预检（check）
 
@@ -72,7 +75,7 @@ cd installer && cargo build --release
 
 0. **交互界面（TUI）**：`all` 在真实终端下自动进入全屏部署界面——顶部阶段条（驱动 → 依赖 → 工具 → stow → 校验）、实时日志窗格、依赖安装进度条；`Q`/`Esc` 请求取消（在阶段与包之间生效，不打断正在运行的安装器），完成屏按任意确认键或 10 秒后自动关闭，结束发桌面通知。`--no-tui`、管道重定向或 `--yes` 时输出带色纯文本日志。
 1. **驱动检测**：`lspci` 识别显卡（NVIDIA / AMD / Intel），缺失驱动自动安装
-2. **依赖检测**：检查 `DEPS` 清单，缺失则安装（官方仓库走 `sudo pacman`，AUR 包走 `paru`；无 paru 时自动从 AUR 构建安装）
+2. **依赖检测**：检查 `DEPS` 核心清单 + 已选中的可选软件（`OPTIONAL_DEPS`，见 `--optional`），缺失则安装（官方仓库走 `sudo pacman`，AUR 包走 `paru`；无 paru 时自动从 AUR 构建安装）
 3. **失败处理**：安装失败时提示 `R=重试 / S=跳过 / Q=退出`；跳过与失败项全部写入日志
 4. **本地工具**：编译 `tools/rightclick` 并安装到 `~/.local/bin`；不在 `input` 组时自动加入（需重新登录生效）
 5. **stow**：`.config/` 下每个目录 → `~/.config` 符号链接；目标是真实目录时先备份为 `<名字>.bak-<时间戳>` 再替换
@@ -108,7 +111,7 @@ installer/            # Rust 部署工具（cargo build --release）
     main.rs           # 入口：参数解析 + 子命令分发
     state.rs          # 运行时状态、日志、命令执行、汇总
     util.rs           # 通用小工具（时间/PATH 查找/相对路径等）
-    deps.rs           # 驱动与软件依赖检测安装（DEPS 清单在此）
+    deps.rs           # 驱动与软件依赖检测安装（核心 DEPS + 可选 OPTIONAL_DEPS 清单在此）
     tools.rs          # 构建并安装 tools/ 内小工具
     stow.rs           # stow / unstow 符号链接管理
     verify.rs         # 语法与运行时校验
@@ -136,7 +139,7 @@ system/
 
 - 新增应用配置：把 `~/.config/<应用>` 放进仓库 `.config/`，跑 `stow` 即生效
 - noctalia 本地插件（SUPER+/ 速查面板、状态栏歌词）：改什么、怎么重载、重装与上游更新——见 [system/noctalia-local-plugins/README.md](system/noctalia-local-plugins/README.md)
-- 修改依赖清单：`installer/src/deps.rs` 顶部的 `DEPS` 数组（`包名, 是否AUR`）
+- 修改依赖清单：核心在 `installer/src/deps.rs` 顶部的 `DEPS` 数组（`包名, 是否AUR`）；非必要大件进 `OPTIONAL_DEPS`（格式 `(key, 中文说明, 包名, 是否AUR)`，key 即 `--optional` 的选择项）
 - 修改 Hyprland 配置后用 `hyprctl reload config-only` 生效，`hyprctl configerrors` 检查错误
 - Hyprland 升级后跑 `hyprpm update` 按新版本重建插件，重启 Hyprland 生效
 - LibreOffice 主题调色板在 `.config/libreoffice/4/user/config/`，新环境部署后在颜色选择器的调色板里重新选一次
@@ -277,7 +280,7 @@ hyprland.lua
 | --- | --- |
 | `main.rs` | 参数解析 + 子命令分发：`all`（默认）/ `deps` / `tools` / `stow` / `unstow` / `verify` / `check`；`all` 在真实终端下调度全屏 TUI |
 | `tui.rs` | 全屏部署界面（ratatui）：阶段条 / 实时日志 / 进度条 / 取消键 / 完成屏；管道与 `--no-tui` 自动回落纯文本 |
-| `deps.rs` | **`DEPS` 清单在此**（格式 `("包名", 是否AUR)`）+ 显卡驱动自动检测（NVIDIA/AMD/Intel）+ paru 自举 |
+| `deps.rs` | **`DEPS` 核心清单在此**（格式 `("包名", 是否AUR)`），非必要大件（微信/QQ/LibreOffice）在 `OPTIONAL_DEPS`（key + 包 + 是否AUR，由 `--optional` / bootstrap 询问选择）+ 显卡驱动自动检测（NVIDIA/AMD/Intel）+ paru 自举 |
 | `tools.rs` | 编译 `tools/` 内小工具装到 `~/.local/bin`，补 `input` 组 |
 | `stow.rs` | 为 `.config/` 下每个条目（目录或单文件，跳过 `.` 开头）建符号链接；目标已是真实目录则先备份为 `<名>.bak-<时间戳>` |
 | `verify.rs` | `luac -p` 校验 Lua、`bash -n` 校验脚本、`hyprctl reload config-only` + `configerrors` 运行时校验 |
@@ -390,7 +393,8 @@ hyprland.lua
 6. `git add .config/<app> ... && git commit`（中文 conventional message，一个主题一个提交）。
 
 ### C.13 往 DEPS 加包 / 改安装器
-- 加包：`deps.rs` 顶部 `DEPS` 数组，格式 `("包名", false)`（官方仓库）或 `("包名", true)`（AUR，走 paru）。
+- 加核心包：`deps.rs` 顶部 `DEPS` 数组，格式 `("包名", false)`（官方仓库）或 `("包名", true)`（AUR，走 paru）。
+- 加可选包（用户按需选装的）：`OPTIONAL_DEPS` 数组，格式 `(key, 中文说明, 包名, 是否AUR)`——同 key 多包会一起选装；`bootstrap.sh` 全量部署前会交互询问，命令行用 `--optional key1,key2`（`all`/`none` 也认）。
 - 改安装器逻辑：按 §A.4 表找对应文件；改完 `cd installer && cargo check`，重部署前先跑 `sonder-installer check` 只读预检。
 
 ### C.14 GRUB 主题

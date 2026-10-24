@@ -6,7 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::deps::DEPS;
+use crate::deps::{DEPS, OPTIONAL_DEPS};
 use crate::state::State;
 use crate::util::{command_exists, read_dir_ok};
 use crate::verify::{hyprland_running, lua_files};
@@ -108,10 +108,17 @@ pub fn preflight(st: &mut State) {
         }
     }
 
-    // 3. 软件依赖
+    // 3. 软件依赖（可选软件只检查已选中的：未选中的不会安装，报缺失只会造成误导）
     st.log("[依赖]");
+    let keys: Vec<&str> = st.optional.iter().map(|s| s.as_str()).collect();
+    let selected_optional: Vec<(&str, bool)> = OPTIONAL_DEPS
+        .iter()
+        .filter(|(key, _, _, _)| keys.contains(key))
+        .map(|(_, _, pkg, aur)| (*pkg, *aur))
+        .collect();
+    let all_deps: Vec<(&str, bool)> = DEPS.iter().copied().chain(selected_optional).collect();
     let mut missing = Vec::new();
-    for (pkg, _) in DEPS {
+    for (pkg, _) in &all_deps {
         let ok = Command::new("pacman")
             .args(["-Q", pkg])
             .output()
@@ -121,8 +128,11 @@ pub fn preflight(st: &mut State) {
             missing.push(*pkg);
         }
     }
+    if !st.optional.is_empty() {
+        st.log(&format!("  可选软件已选: {}", st.optional.join(", ")));
+    }
     if missing.is_empty() {
-        st.log(&format!("  {} 个依赖全部已安装 [OK]", DEPS.len()));
+        st.log(&format!("  {} 个依赖全部已安装 [OK]", all_deps.len()));
     } else {
         st.log(&format!(
             "  缺失 {} 个: {} [警告]（正式运行将安装）",

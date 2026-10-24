@@ -20,6 +20,9 @@ pub struct State {
     pub repo_dir: PathBuf,
     pub log_file: PathBuf,
     pub non_interactive: bool,
+    /// 已选中的可选软件 key（--optional 传入；bootstrap.sh 部署前交互询问后转发）。
+    /// 空 = 不安装任何可选软件。
+    pub optional: Vec<String>,
     pub installed: Vec<String>,
     pub skipped: Vec<String>,
     pub failed: Vec<String>,

@@ -35,8 +35,6 @@ pub const DEPS: &[(&str, bool)] = &[
     ("fish", false),
     // 仓库自带配置的应用：不装包的话，符号链接指向的是空目录
     ("neovim", false),
-    // 终端文件管理器已从 yazi 迁移到 lf（SUPER+F）
-    ("lf", false),
     // 终端字体：alacritty.toml 指定 JetBrainsMono Nerd Font
     ("ttf-jetbrains-mono-nerd", false),
     // 音频 / 亮度 / 蓝牙

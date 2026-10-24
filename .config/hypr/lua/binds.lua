@@ -24,7 +24,6 @@ end
 hl.bind(MOD .. " + B",      hl.dsp.exec_cmd('xdg-open "https://"'), { description = "打开默认浏览器" })
 hl.bind(MOD .. " + Return", hl.dsp.exec_cmd(M.terminal),            { description = "打开终端" })
 hl.bind(MOD .. " + E",      hl.dsp.exec_cmd(M.files),               { description = "打开文件管理器" })
-hl.bind(MOD .. " + F",      hl.dsp.exec_cmd(M.termfiles),           { description = "打开终端文件管理器 (lf)" })
 
 -- 呼出键沿用 Windows 任务管理器的 Ctrl+Shift+Esc，方便肌肉记忆。
 hl.bind("CTRL + SHIFT + Escape", hl.dsp.exec_cmd("missioncenter"), { description = "系统资源监视器（Mission Center）" })

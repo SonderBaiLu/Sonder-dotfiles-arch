@@ -1,0 +1,12 @@
+[Unit]
+Description=WayVNC VNC Server
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wayvnc --config=%h/.config/wayvnc/config
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

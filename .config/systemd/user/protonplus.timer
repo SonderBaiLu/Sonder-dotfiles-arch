@@ -1,0 +1,10 @@
+[Unit]
+Description=ProtonPlus
+
+[Timer]
+
+OnUnitActiveSec=12h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

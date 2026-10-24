@@ -213,7 +213,7 @@ flowchart TB
 | `hypr/` | **核心**：Hyprland 原生 Lua 配置 | `hyprland.lua` + `lua/*.lua` + `scripts/` | `hyprctl reload config-only` |
 | `alacritty/` | 终端配置与主题 | `alacritty.toml` + `themes/` | 重开终端 |
 | `fish/` | fish shell（fisher 插件、tide 提示符、ai 函数） | `config.fish`、`fish_plugins`、`functions/ai*.fish` | 新开 shell；插件变更跑 `fisher update` |
-| `fcitx5/` | 输入法（profile/config/conf） | `profile`（输入法组） | `fcitx5 -r` 重启输入法 |
+| `fcitx5/` | 输入法（profile/config/conf） | `profile`（输入法组） | `fcitx5 -r` 重启输入法；⚠️ profile 会被运行中的 fcitx5 回写，改它以运行时状态为准 |
 | `environment.d/` | systemd 用户会话环境变量（输入法） | `im.conf` | 重新登录（systemd 用户管理器重建环境） |
 | `noctalia/` | Noctalia 外壳的调色/状态栏覆盖 | `bar.toml`、`palettes/sllh-mc.json` | noctalia 热重载（自动） |
 | `wallust/` | 壁纸取色配置与模板 | `wallust.toml`、`templates/` | 下次换壁纸时经 `WallustAwww.sh` 生效 |

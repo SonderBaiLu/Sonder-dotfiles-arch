@@ -42,6 +42,9 @@ secrets*
 # pipewire-session-manager.service 会话别名由 systemctl 自动生成
 .config/systemd/user/*.wants/
 .config/systemd/user/pipewire-session-manager.service
+# 个人服务单元只留在本机，不入库
+.config/systemd/user/ollama.service
+.config/systemd/user/openclaw-gateway.service
 
 # VLC：界面布局状态随窗口变动，不跟踪（vlcrc 中的硬解修复才需要入库）
 .config/vlc/vlc-qt-interface.conf

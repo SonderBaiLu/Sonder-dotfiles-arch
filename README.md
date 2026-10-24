@@ -87,7 +87,7 @@ bootstrap.sh          # 全新系统引导：装构建依赖 → 编译 → 部�
   fcitx5/             # 输入法配置（profile / config / conf，不含运行时缓存）
   environment.d/      # systemd 用户会话环境（输入法等变量）
   libreoffice/        # LibreOffice 用户配置（Catppuccin 调色板；registrymodifications 等运行时状态不入库）
-  systemd/            # systemd 用户服务单元（aria2 / wayvnc 等；ollama、openclaw-gateway 留在本机不入库，*.wants 链接不入库）
+  systemd/            # systemd 用户服务单元（aria2 / protonplus.timer 等；ollama、openclaw-gateway 留在本机不入库，*.wants 链接不入库）
   vlc/                # VLC 配置（含混合显卡 avcodec-hw=none 软解修复）
 installer/            # Rust 部署工具（cargo build --release）
   src/
@@ -110,7 +110,7 @@ system/
 1. `git clone git@github.com:SonderBaiLu/Sonder-dotfiles-arch.git ~/Sonder-dotfiles-arch`
 2. `cd ~/Sonder-dotfiles-arch && ./bootstrap.sh`
 3. 可选：`sudo bash system/grub-catppuccin/install.sh` 应用 GRUB 主题（`--revert` 回滚）
-4. 按需启用用户服务：`systemctl --user daemon-reload && systemctl --user enable --now aria2.service wayvnc.service protonplus.timer`
+4. 按需启用用户服务：`systemctl --user daemon-reload && systemctl --user enable --now aria2.service protonplus.timer`
 5. 重建 `~/.config/fish/secrets.fish`（模板见 `secrets.fish.example`，未入库）
 6. 重新登录（`input` 组生效），从 tty1 登录即自动进入 Hyprland
 

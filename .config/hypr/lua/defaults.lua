@@ -4,10 +4,9 @@
 local M = {
 	terminal = "alacritty",
 	files = "nautilus --new-window",
-	-- yazi 是 TUI，exec 派发的进程没有 TTY，直接跑会因取不到终端尺寸而退出，须包一层 alacritty；
-	-- yazi 不识别 Alacritty，会落到 ueberzugpp（Wayland）分支导致卡死；
-	-- TERM=foot 让 yazi 走 Sixel 驱动，Alacritty 原生支持 Sixel，可正常显示图片预览。
-	termfiles = "alacritty env TERM=foot yazi",
+	-- lf 是 TUI，exec 派发的进程没有 TTY，直接跑会因取不到终端尺寸而退出，须包一层 alacritty；
+	-- alacritty 没有图形协议，图片预览由 lf 的预览脚本调用 chafa 渲染成彩色块。
+	termfiles = "alacritty lf",
 	editor = "nvim",
 	main_mod = "SUPER",
 	scripts = os.getenv("HOME") .. "/.config/hypr/scripts",

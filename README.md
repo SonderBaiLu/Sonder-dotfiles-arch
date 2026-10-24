@@ -1,8 +1,17 @@
 # Sonder-dotfiles-arch
 
-Arch Linux dotfiles：Hyprland（原生 Lua 配置）+ Alacritty。
+![OS](https://img.shields.io/badge/OS-Arch_Linux-1793D1?logo=arch-linux&logoColor=white)
+![WM](https://img.shields.io/badge/WM-Hyprland_0.56-58E1FF?logo=hyprland&logoColor=white)
+![Config](https://img.shields.io/badge/配置-原生_Lua-8A2BE2)
+![Deploy](https://img.shields.io/badge/部署-Rust_安装器-DEA584?logo=rust&logoColor=white)
+![Layout](https://img.shields.io/badge/布局-GNU_Stow-E5A50A)
+![Shell](https://img.shields.io/badge/Shell-fish_+_tide-4EAA25)
+
+Arch Linux dotfiles：Hyprland（原生 Lua 配置）+ Noctalia 外壳 + Alacritty。
 
 标准 stow 布局：仓库内 `.config/<应用>` 直接对应 `~/.config/<应用>`，由 `stow` 子命令创建符号链接。
+
+**目录**：[一键部署](#一键部署) · [目录结构](#目录结构) · [还原步骤](#重装系统后的还原步骤) · [维护提示](#维护提示) · [**架构与修改指南（详解）**](#项目架构与修改指南详解)
 
 ## 仓库位置
 
@@ -140,6 +149,31 @@ system/
 
 ### A.1 一图看懂：仓库 → 家目录 → 运行时
 
+```mermaid
+flowchart TB
+    subgraph REPO["📦 仓库 ~/Sonder-dotfiles-arch（唯一事实源）"]
+        direction LR
+        B["bootstrap.sh<br/>全新系统引导"]
+        C[".config/<br/>12 个 stow 包"]
+        I["installer/<br/>Rust 部署器"]
+        T["tools/ 与 system/<br/>本地工具 · GRUB 主题"]
+    end
+    subgraph HOME["🏠 家目录"]
+        L["~/.config/应用 = 指向仓库的符号链接<br/>改仓库文件即改本机配置"]
+    end
+    subgraph RUN["🖥️ 运行时"]
+        direction LR
+        H["Hyprland<br/>原生 Lua 配置"]
+        N["Noctalia 外壳<br/>栏/启动器/锁屏/Polkit"]
+        S["systemd 用户服务<br/>aria2 · protonplus"]
+    end
+    REPO == "installer stow 建链" ==> HOME
+    HOME == "tty1 登录 / hyprctl reload" ==> RUN
+```
+
+<details>
+<summary>纯文本版架构图（终端/原始视图）</summary>
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ ~/Sonder-dotfiles-arch（git 仓库 = 唯一事实源）               │
@@ -164,6 +198,8 @@ system/
 │  Hyprland（原生 Lua 配置）+ Noctalia 外壳 + systemd 用户服务  │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+</details>
 
 **核心心智模型**：本机所有配置都活在仓库里。家目录里看到的是符号链接；改配置就是改仓库文件，改完跑对应验证命令即可生效；git 负责记忆一切。
 
@@ -208,8 +244,22 @@ hyprland.lua
 
 其余成员：
 
-- `lua/animations/`：**五套动画方案**（`bounce` / `drop` / `flow` / `snap` / `veil`），`init.lua` 在登录和每次 reload 时**随机选一套**。
-- `scripts/`：被快捷键调用的辅助脚本（壁纸取色 `WallustAwww.sh`、夜间模式 `Hyprsunset.sh`、截屏 `ScreenShot.sh`、亮度/音量/媒体控制、游戏模式、概览切换、触摸板开关等约 20 个）。
+- `lua/animations/`：**五套动画方案**（`bounce` / `drop` / `flow` / `snap` / `veil`），`init.lua` 在登录和每次 reload 时**随机选一套**；窗口、工作区与 **noctalia 面板层（layers）** 都随方案联动。
+- <details>
+  <summary><code>scripts/</code>：被快捷键调用的辅助脚本（约 20 个，点击展开）</summary>
+
+  | 脚本 | 作用 |
+  | --- | --- |
+  | `WallustAwww.sh` | 换壁纸后触发 wallust 取色并套用 |
+  | `Hyprsunset.sh` | 夜间色温（MOD+N） |
+  | `ScreenShot.sh` | 截屏（grim + slurp + swappy） |
+  | `Brightness*.sh` / `Volume.sh` / `MediaCtrl.sh` | 亮度 / 音量 / 媒体控制 |
+  | `GameMode.sh` / `ChangeBlur.sh` | 游戏模式 / 模糊调整 |
+  | `OverviewToggle.sh` / `Dropterminal.sh` / `Tak0-Per-Window-Switch.sh` | 概览 / 下拉终端 / 按窗口切换 |
+  | `LockScreen.sh` / `KillActiveProcess.sh` / `Refresh.sh` | 锁屏 / 杀进程 / 刷新 |
+  | `AirplaneMode.sh` / `TouchPad.sh` / `KeyboardLayout.sh` | 飞行模式 / 触摸板 / 键盘布局 |
+
+  </details>
 - `hypridle.conf`：空闲管理，触发 noctalia 锁屏（`noctalia msg session lock`）/ 休眠 / 关屏。
 - `initial-boot.sh`：首次进系统的一次性精装（壁纸、配色、深色模式），跑完留 `.initial_startup_done` 标记（已 gitignore）。
 - `wallust/`：wallust 渲染产物目录（生成物，不手工编辑）。

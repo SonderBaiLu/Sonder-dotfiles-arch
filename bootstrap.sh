@@ -13,6 +13,7 @@ REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 
 info() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
+ok() { printf '\033[1;32m  ✔ %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; exit 1; }
 
@@ -27,8 +28,9 @@ command -v cargo >/dev/null || missing+=(rust)
 if [ ${#missing[@]} -gt 0 ]; then
 	printf '将安装: %s\n' "${missing[*]}"
 	sudo pacman -S --needed --noconfirm "${missing[@]}"
+	ok "构建依赖就绪"
 else
-	echo "已就绪"
+	ok "构建依赖已就绪"
 fi
 
 # ---- 2. 编译安装器 ----
@@ -55,9 +57,9 @@ fi
 # hypr-dynamic-cursors 光标动态效果；按当前 Hyprland 版本联网编译，
 # 失败只告警不中止部署（无插件时 Hyprland 照常启动，仅没有光标特效）
 if command -v hyprpm >/dev/null && command -v cpio >/dev/null; then
-	if hyprpm list 2>/dev/null | grep -q dynamic-cursors; then
-		echo "hypr-dynamic-cursors 插件已安装"
-	else
+if hyprpm list 2>/dev/null | grep -q dynamic-cursors; then
+	ok "hypr-dynamic-cursors 插件已安装"
+else
 		info "安装 Hyprland 插件 hypr-dynamic-cursors（联网编译，约 1-2 分钟）"
 		hyprpm add https://github.com/VirtCode/hyprland-dynamic-cursors \
 			|| warn "插件安装失败，可稍后手动执行：hyprpm add https://github.com/VirtCode/hyprland-dynamic-cursors"
@@ -72,7 +74,7 @@ MARK_BEGIN="# >>> sonder-hyprland-autostart >>>"
 MARK_END="# <<< sonder-hyprland-autostart <<<"
 PROFILE="$HOME/.bash_profile"
 if grep -qF "$MARK_BEGIN" "$PROFILE" 2>/dev/null; then
-	echo "已存在，跳过"
+	ok "tty1 自动启动片段已存在，跳过"
 else
 	touch "$PROFILE"
 	{
@@ -87,11 +89,14 @@ fi
 SNIPPET
 		printf '%s\n' "$MARK_END"
 	} >> "$PROFILE"
-	echo "已写入 $PROFILE"
+	ok "已写入 $PROFILE"
 fi
 
 info "完成"
-echo "日志: ~/.local/state/sonder-dotfiles/install.log"
+echo
+printf '\033[1;32m✔ Sonder 桌面部署流程全部结束\033[0m\n'
+echo "  日志：~/.local/state/sonder-dotfiles/install.log"
+echo "  验证：从 tty1 重新登录即自动进入 Hyprland"
 if [ "$status" -ne 0 ]; then
 	warn "部署有失败/跳过项（退出码 $status），详见上面的日志"
 fi

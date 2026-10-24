@@ -1,11 +1,20 @@
 //! 运行时状态：日志文件、安装/跳过/失败结果，以及日志与命令执行。
 
 use std::fs;
-use std::io::Write;
+use std::io::{IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::util::now;
+
+// ANSI 转义常量：paint 与 log 共用。
+const RESET: &str = "\x1b[0m";
+const BOLD: &str = "\x1b[1m";
+const DIM: &str = "\x1b[2m";
+const GREEN: &str = "\x1b[32m";
+const YELLOW: &str = "\x1b[33m";
+const RED: &str = "\x1b[31m";
+const CYAN: &str = "\x1b[36m";
 
 pub struct State {
     pub repo_dir: PathBuf,
@@ -16,17 +25,80 @@ pub struct State {
     pub failed: Vec<String>,
 }
 
+/// 终端着色：按行首标签/符号/横幅给消息上色。
+/// 仅在 stdout 是真实终端时生效；重定向到文件或管道时保持纯文本，
+/// 保证 `| tee`、CI 输出不含转义序列。日志文件始终写纯文本。
+fn paint(msg: &str) -> String {
+    if !std::io::stdout().is_terminal() {
+        return msg.to_string();
+    }
+
+    // 分节横幅：青色加粗；含"失败"字样的收尾横幅用红色示警。
+    if msg.starts_with("====") || msg.starts_with("####") {
+        let color = if msg.contains("失败") { RED } else { CYAN };
+        return format!("{}{}{}{}", BOLD, color, msg, RESET);
+    }
+
+    // 结果符号行（部署汇总用）：按语义着色。
+    let (symbol, color) = if msg.starts_with('✔') {
+        ("✔", GREEN)
+    } else if msg.starts_with('✘') {
+        ("✘", RED)
+    } else if msg.starts_with("➖") {
+        ("➖", YELLOW)
+    } else if msg.starts_with('ℹ') {
+        ("ℹ", CYAN)
+    } else {
+        ("", "")
+    };
+    if !symbol.is_empty() {
+        return format!("{}{}{}{}{}", BOLD, color, symbol, RESET, &msg[symbol.len()..]);
+    }
+
+    // 标签行：只给方括号标签上色，正文保持默认色，长行不会糊成一片。
+    let (color, bold_tag) = if msg.starts_with("[OK]") {
+        (GREEN, false)
+    } else if msg.starts_with("[FAIL]") {
+        (RED, true)
+    } else if msg.starts_with("[WARN]") || msg.starts_with("[SKIP]") {
+        (YELLOW, false)
+    } else if msg.starts_with("[INFO]") || msg.starts_with("[QUIT]") {
+        (CYAN, false)
+    } else {
+        // 行首无标签：可能是预检的逐条结果行，行内标记就地着色。
+        return paint_inline(msg).unwrap_or_else(|| msg.to_string());
+    };
+    let end = msg.find(']').map(|i| i + 1).unwrap_or(0);
+    let tag = if bold_tag { format!("{}{}", BOLD, &msg[..end]) } else { msg[..end].to_string() };
+    format!("{}{}{}{}{}", color, tag, RESET, DIM, &msg[end..],)
+}
+
+/// 行内结果标记（预检逐条结果把 [OK]/[警告] 等放在行尾）就地着色；无命中返回 None。
+fn paint_inline(msg: &str) -> Option<String> {
+    let colored = msg
+        .replace("[OK]", &format!("{}{}[OK]{}", GREEN, BOLD, RESET))
+        .replace("[警告]", &format!("{}{}[警告]{}", YELLOW, BOLD, RESET))
+        .replace("[冲突]", &format!("{}{}[冲突]{}", RED, BOLD, RESET))
+        .replace("[缺失]", &format!("{}{}[缺失]{}", YELLOW, BOLD, RESET));
+    (colored != msg).then_some(colored)
+}
+
 impl State {
-    /// 打印一行日志并追加到日志文件
+    /// 打印一行日志并追加到日志文件（终端带色，文件纯文本）
     pub fn log(&self, msg: &str) {
-        let line = format!("[{}] {}", now(), msg);
-        println!("{}", line);
+        let stamped = format!("[{}] {}", now(), msg);
+        if std::io::stdout().is_terminal() {
+            // 终端上时间戳压暗，正文走 paint 的标签着色。
+            println!("{}[{}]{} {}", DIM, now(), RESET, paint(msg));
+        } else {
+            println!("{}", stamped);
+        }
         let mut f = fs::OpenOptions::new()
             .create(true)
             .append(true)
             .open(&self.log_file)
             .unwrap();
-        let _ = writeln!(f, "{}", line);
+        let _ = writeln!(f, "{}", stamped);
     }
 
     /// 运行命令，stdout 追加到日志，stderr 输出到终端，返回是否成功
@@ -81,20 +153,20 @@ impl State {
     }
 }
 
-/// 安装类子命令的结尾汇总
+/// 部署汇总：终端上 ✔/➖/✘ 三色符号行，日志文件同结构纯文本。
 pub fn summary(st: &State) {
     st.log("==================== 部署汇总 ====================");
-    st.log(&format!("新安装: {} 个包", st.installed.len()));
+    st.log(&format!("✔ 新安装 {} 个包", st.installed.len()));
     if !st.installed.is_empty() {
-        st.log(&format!("  {}", st.installed.join(" ")));
+        st.log(&format!("      {}", st.installed.join(" ")));
     }
-    st.log(&format!("跳过:   {} 个包", st.skipped.len()));
+    st.log(&format!("➖ 跳过 {} 个包", st.skipped.len()));
     if !st.skipped.is_empty() {
-        st.log(&format!("  {}", st.skipped.join(" ")));
+        st.log(&format!("      {}", st.skipped.join(" ")));
     }
-    st.log(&format!("失败:   {} 项", st.failed.len()));
+    st.log(&format!("✘ 失败 {} 项", st.failed.len()));
     if !st.failed.is_empty() {
-        st.log(&format!("  {}", st.failed.join(" ")));
+        st.log(&format!("      {}", st.failed.join(" ")));
     }
-    st.log(&format!("完整日志: {}", st.log_file.display()));
+    st.log(&format!("ℹ 完整日志: {}", st.log_file.display()));
 }

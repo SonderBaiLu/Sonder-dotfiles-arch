@@ -51,6 +51,21 @@ else
 	"$INSTALLER" all || status=$?
 fi
 
+# ---- 3.5 Hyprland 插件（hyprpm 管理）----
+# hypr-dynamic-cursors 光标动态效果；按当前 Hyprland 版本联网编译，
+# 失败只告警不中止部署（无插件时 Hyprland 照常启动，仅没有光标特效）
+if command -v hyprpm >/dev/null && command -v cpio >/dev/null; then
+	if hyprpm list 2>/dev/null | grep -q dynamic-cursors; then
+		echo "hypr-dynamic-cursors 插件已安装"
+	else
+		info "安装 Hyprland 插件 hypr-dynamic-cursors（联网编译，约 1-2 分钟）"
+		hyprpm add https://github.com/VirtCode/hyprland-dynamic-cursors \
+			|| warn "插件安装失败，可稍后手动执行：hyprpm add https://github.com/VirtCode/hyprland-dynamic-cursors"
+	fi
+else
+	warn "缺 hyprpm 或 cpio，跳过 Hyprland 插件安装"
+fi
+
 # ---- 4. tty1 自动启动 Hyprland ----
 info "配置 tty1 自动启动 Hyprland"
 MARK_BEGIN="# >>> sonder-hyprland-autostart >>>"

@@ -12,6 +12,9 @@ use crate::util::{command_exists, is_tty};
 pub const DEPS: &[(&str, bool)] = &[
     // Hyprland 核心
     ("hyprland", false),
+    ("hyprpm", false),
+    // hyprpm add 编译插件时用 cpio 解包 Hyprland 源码头文件
+    ("cpio", false),
     ("hypridle", false),
     // 锁屏由 noctalia 内置锁屏负责（hyprlock 会与其冲突导致双锁屏）；
     // Polkit 授权弹窗由 noctalia 内置的认证代理负责（quickshell Services/Polkit 模块），
@@ -32,7 +35,8 @@ pub const DEPS: &[(&str, bool)] = &[
     ("fish", false),
     // 仓库自带配置的应用：不装包的话，符号链接指向的是空目录
     ("neovim", false),
-    ("yazi", false),
+    // 终端文件管理器已从 yazi 迁移到 lf（SUPER+F）
+    ("lf", false),
     // 终端字体：alacritty.toml 指定 JetBrainsMono Nerd Font
     ("ttf-jetbrains-mono-nerd", false),
     // 音频 / 亮度 / 蓝牙
@@ -69,6 +73,11 @@ pub const DEPS: &[(&str, bool)] = &[
     ("xdg-desktop-portal-gtk", false),
     ("dbus", false),
     ("systemd", false),
+    // 办公 / 媒体 / 系统监视（仓库均有对应配置或快捷键绑定）
+    ("libreoffice-still", false),
+    ("libreoffice-still-zh-cn", false),
+    ("vlc", false),
+    ("mission-center", false),
     // 常用软件 如果你不需要刻意在这里删除掉
     ("linuxqq",true),
     ("wechat-bin", true),

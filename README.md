@@ -17,7 +17,8 @@ Arch Linux dotfiles：Hyprland（原生 Lua 配置）+ Alacritty。
 ```
 
 它会依次完成：检查并安装构建依赖（`base-devel` / `git` / `rust`）→ 编译 `sonder-installer` →
-只读预检 → 完整部署（驱动 + 依赖 + 本地工具 + 符号链接 + 校验）→ 写入 tty1 自动启动 Hyprland 的登录片段。
+只读预检 → 完整部署（驱动 + 依赖 + 本地工具 + 符号链接 + 校验）→ 安装 hyprpm 插件（hypr-dynamic-cursors）→
+写入 tty1 自动启动 Hyprland 的登录片段。
 
 已有 rust 环境时也可以手动走原流程：
 
@@ -85,6 +86,10 @@ bootstrap.sh          # 全新系统引导：装构建依赖 → 编译 → 部�
   fastfetch/          # fastfetch 配置与 logo
   fcitx5/             # 输入法配置（profile / config / conf，不含运行时缓存）
   environment.d/      # systemd 用户会话环境（输入法等变量）
+  lf/                 # lf 终端文件管理器（lfrc + chafa 预览脚本）
+  libreoffice/        # LibreOffice 用户配置（Catppuccin 调色板；registrymodifications 等运行时状态不入库）
+  systemd/            # systemd 用户服务单元（aria2 / ollama / wayvnc 等，*.wants 链接不入库）
+  vlc/                # VLC 配置（含混合显卡 avcodec-hw=none 软解修复）
 installer/            # Rust 部署工具（cargo build --release）
   src/
     main.rs           # 入口：参数解析 + 子命令分发
@@ -97,16 +102,20 @@ installer/            # Rust 部署工具（cargo build --release）
     preflight.rs      # check 只读预检
 tools/
   rightclick/         # 连点器（binds.lua 调用 ~/.local/bin/rightclick）
+system/
+  grub-catppuccin/    # GRUB Catppuccin Frappé 主题（sudo bash system/grub-catppuccin/install.sh 安装，--revert 回滚）
 ```
 
 ## 重装系统后的还原步骤
 
 1. `git clone git@github.com:SonderBaiLu/Sonder-dotfiles-arch.git ~/Sonder-dotfiles-arch`
 2. `cd ~/Sonder-dotfiles-arch && ./bootstrap.sh`
-3. 重建 `~/.config/fish/secrets.fish`（模板见 `secrets.fish.example`，未入库）
-4. 重新登录（`input` 组生效），从 tty1 登录即自动进入 Hyprland
+3. 可选：`sudo bash system/grub-catppuccin/install.sh` 应用 GRUB 主题（`--revert` 回滚）
+4. 按需启用用户服务：`systemctl --user daemon-reload && systemctl --user enable --now aria2.service ollama.service openclaw-gateway.service wayvnc.service protonplus.timer`
+5. 重建 `~/.config/fish/secrets.fish`（模板见 `secrets.fish.example`，未入库）
+6. 重新登录（`input` 组生效），从 tty1 登录即自动进入 Hyprland
 
-仓库外的内容需要自行恢复：`/etc/fstab`（btrfs 子卷、`/mnt/数据`、NFS）、启用的 systemd 服务与用户组、
+仓库外的内容需要自行恢复：`/etc/fstab`（btrfs 子卷、`/mnt/数据`、NFS）、额外用户组、
 `~/.config/fish/secrets.fish`、壁纸（`~/Pictures/wallpapers`）。
 
 ## 维护提示
@@ -114,6 +123,8 @@ tools/
 - 新增应用配置：把 `~/.config/<应用>` 放进仓库 `.config/`，跑 `stow` 即生效
 - 修改依赖清单：`installer/src/deps.rs` 顶部的 `DEPS` 数组（`包名, 是否AUR`）
 - 修改 Hyprland 配置后用 `hyprctl reload config-only` 生效，`hyprctl configerrors` 检查错误
+- Hyprland 升级后跑 `hyprpm update` 按新版本重建插件，重启 Hyprland 生效
+- LibreOffice 主题调色板在 `.config/libreoffice/4/user/config/`，新环境部署后在颜色选择器的调色板里重新选一次
 - 校验语法：`luac -p hyprland.lua`（Lua）、`bash -n scripts/xxx.sh`（shell）
 
 ## 注意

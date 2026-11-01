@@ -25,6 +25,8 @@ hl.on("hyprland.start", function()
 	-- 剪贴板历史（cliphist），分别监听文本与图片
 	hl.exec_cmd("wl-paste --type text --watch cliphist store")
 	hl.exec_cmd("wl-paste --type image --watch cliphist store")
+	-- 文件管理器预启动：以 GApplication 服务模式常驻，Super+E 复用它而不是每次冷启动
+	hl.exec_cmd("nautilus --gapplication-service")
 end)
 
 return true

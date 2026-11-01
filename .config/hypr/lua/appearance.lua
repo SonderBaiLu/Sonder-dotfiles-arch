@@ -5,7 +5,8 @@
 --
 -- 曲线与动画已迁至 lua/animations/ 下的方案模块，登录与每次 reload 随机选一套，
 -- 可用 Super+Alt+A 随机切换、或在 .pinned 文件里固定方案（见 animations/init.lua）。
-require("lua.animations.init")
+-- 注意：动画方案必须在 hl.config 之后加载（见文件末尾）——Lua 配置下要先由 hl.config
+-- 声明 animations 段，动画子系统才会被初始化，否则 hl.animation 写入的配置不会生效。
 
 -- 静态主题色（Noctalia 色板）。
 -- primary 用于活动边框/输入框外框，surface 用于非活动边框/背景。
@@ -17,6 +18,11 @@ local tertiary = "rgb(94e2d5)" -- 校验色
 local surface_lowest = "rgb(212232)" -- 更深背景
 
 hl.config({
+	-- 显式启用动画子系统：Lua 配置下缺这一段，后面的 hl.animation 不会真正生效。
+	animations = {
+		enabled = true,
+	},
+
 	general = {
 		border_size = 2, -- 边框宽度（像素）：2px 配合活动/非活动配色，保证多窗并排时焦点可辨
 		gaps_in = 2, -- 窗口内边距
@@ -42,7 +48,7 @@ hl.config({
 		shadow = {
 			enabled = true,
 			range = 3, -- 阴影扩散范围
-			render_power = 6, -- 阴影渲染强度
+			render_power = 4, -- 阴影渲染强度（0.57 起上限为 4，超出会报错）
 			color = primary, -- 阴影颜色（活动，替换原 wallust $color12）
 			color_inactive = surface, -- 阴影颜色（非活动，替换原 wallust $color10）
 		},
@@ -91,5 +97,8 @@ hl.layer_rule({
 	blur = true,
 	blur_popups = true,
 })
+
+-- 动画方案：必须在上面 hl.config 之后加载，动画配置才会被真正应用。
+require("lua.animations.init")
 
 return true

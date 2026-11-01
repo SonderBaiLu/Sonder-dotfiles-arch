@@ -86,8 +86,8 @@ tag("class", "^([Ww]aytrogen)$", "wallpaper")
 -- 多媒体（音频）
 tag("class", "^([Aa]udacious)$", "multimedia")
 
--- 多媒体（视频）
-tag("class", "^([Mm]pv|vlc)$", "multimedia_video")
+-- 多媒体（视频播放器）：统一浮动播放，窗口规格见下方 multimedia_video 标签规则
+tag("class", "^(mpv|vlc|com.github.rafostar.Clapper|haruna|cells|io.github.celluloid_player.Celluloid|totem|smplayer|mplayer)$", "multimedia_video")
 
 -- 系统设置工具
 tag("title", "^ROG Control$", "settings") -- 华硕 ROG 控制中心
@@ -126,10 +126,18 @@ hl.window_rule({ match = { tag = "settings" }, float = true, center = true })
 hl.window_rule({ match = { tag = "viewer" }, float = true, center = true })
 hl.window_rule({ match = { tag = "wallpaper" }, float = true, center = true })
 
+-- 影音播放器：开窗即浮动 + 居中 + 屏幕 70%×70%，双击视频即可直接以该规格播放。
+-- size 是静态规则，只在窗口创建时生效一次，会覆盖播放器自己记忆的窗口几何。
+hl.window_rule({
+  match = { tag = "multimedia_video" },
+  float = true,
+  center = true,
+  size = { "monitor_w*0.7", "monitor_h*0.7" },
+})
+
 -- 指定应用浮动。
 hl.window_rule({ match = { class = "^([Zz]oom|onedriver|onedriver-launcher)$" }, float = true }) -- 会议 / OneDrive
 hl.window_rule({ match = { class = "^(org.gnome.Calculator|[Qq]alculate-gtk)$" }, float = true }) -- 计算器（去重）
-hl.window_rule({ match = { class = "^(mpv|com.github.rafostar.Clapper)$" }, float = true }) -- 视频播放器
 -- Ferdium：浮动 + 居中 + 指定尺寸（原为三条分散规则，合并为一）。
 hl.window_rule({
   match = { class = "^([Ff]erdium)$" },
@@ -265,12 +273,4 @@ hl.window_rule({
   -- 图片查看器可以稍微大一点，比如屏幕宽度的 70%，高度的 70%
   size = { "monitor_w*0.7", "monitor_h*0.7" },
 })
--- VLC：双击视频文件开窗即按微信查看器的规格浮动播放（浮动 + 居中 + 屏幕 70%×70%）。
--- size 为静态规则只在开窗时生效一次，VLC 自身记住的窗口几何会被这里覆盖。
-hl.window_rule({
-  name = "vlc",
-  match = { class = "^vlc$" },
-  float = true,
-  center = true,
-  size = { "monitor_w*0.7", "monitor_h*0.7" },
-})
+return true

@@ -41,9 +41,13 @@ def git(*args: str) -> str:
     ).stdout
 
 
-def build_prompt() -> str:
-    stat = git("diff", "--cached", "--stat", "--no-color")[-4000:]
-    patch = git("diff", "--cached", "--no-color", "--no-ext-diff")[:8000]
+def build_prompt(rev: str | None = None) -> str:
+    if rev:
+        stat = git("show", "--stat", "--no-color", "--format=", rev)[-4000:]
+        patch = git("show", "--no-color", "--no-ext-diff", "--format=", rev)[:8000]
+    else:
+        stat = git("diff", "--cached", "--stat", "--no-color")[-4000:]
+        patch = git("diff", "--cached", "--no-color", "--no-ext-diff")[:8000]
     return PROMPT_TEMPLATE.format(stat=stat.strip(), patch=patch.strip())
 
 
@@ -91,8 +95,9 @@ def request_message(prompt: str) -> str:
 
 
 def main() -> int:
+    rev = sys.argv[1] if len(sys.argv) > 1 else None
     try:
-        message = request_message(build_prompt())
+        message = request_message(build_prompt(rev))
     except Exception:
         return 1
 

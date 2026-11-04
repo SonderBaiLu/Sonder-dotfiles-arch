@@ -1,0 +1,52 @@
+# 语言格式化器声明。
+# Helix 内置 languages.toml 已经配好各语言的 LSP(命令名在 $PATH 里查找),
+# 这里只补充 formatter —— Helix 默认不为任何语言绑定格式化器。
+# 手动格式化:普通模式输入 `:fmt`;想保存时自动格式化,在对应语言下加一行 auto-format = true。
+
+[[language]]
+name = "rust"
+formatter = { command = "rustfmt", args = ["--edition", "2024"] }
+
+[[language]]
+name = "lua"
+formatter = { command = "stylua", args = ["-"] }
+
+[[language]]
+name = "javascript"
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+
+[[language]]
+name = "jsx"
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+
+[[language]]
+name = "typescript"
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+
+[[language]]
+name = "tsx"
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+
+[[language]]
+name = "vue"
+formatter = { command = "prettier", args = ["--parser", "vue"] }
+
+[[language]]
+name = "css"
+formatter = { command = "prettier", args = ["--parser", "css"] }
+
+[[language]]
+name = "html"
+formatter = { command = "prettier", args = ["--parser", "html"] }
+
+[[language]]
+name = "yaml"
+formatter = { command = "prettier", args = ["--parser", "yaml"] }
+
+[[language]]
+name = "json"
+formatter = { command = "prettier", args = ["--parser", "json"] }
+
+[[language]]
+name = "markdown"
+formatter = { command = "prettier", args = ["--parser", "markdown"] }

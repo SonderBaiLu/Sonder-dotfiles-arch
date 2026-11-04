@@ -92,7 +92,7 @@ hl.bind(MOD .. " + ALT + mouse_up",   function() cursor_zoom(1 / 2.0) end,{ desc
 -- 夜间护眼 / 壁纸 / 透明度
 -- ============================================================
 
-hl.bind(MOD .. " + N",          hl.dsp.exec_cmd(sc .. "/Hyprsunset.sh toggle"), { description = "切换夜间模式" })
+hl.bind(MOD .. " + N",          hl.dsp.exec_cmd("noctalia msg nightlight-toggle"), { description = "切换夜间模式" })
 hl.bind("CTRL + ALT + W",       hl.dsp.exec_cmd(sc .. "/WallpaperRandom.sh"),    { description = "随机更换壁纸" })
 -- 原 setprop active opaque toggle 没有对应的 Lua 布尔翻转 API，这里直接用 hyprctl 等价执行。
 hl.bind(MOD .. " + CTRL + O",   hl.dsp.exec_cmd("hyprctl dispatch setprop active opaque toggle"), { description = "切换当前窗口透明度" })
@@ -227,23 +227,18 @@ hl.bind("XF86AudioPrev",          hl.dsp.exec_cmd(sc .. "/MediaCtrl.sh --prv"), 
 hl.bind("XF86AudioStop",          hl.dsp.exec_cmd(sc .. "/MediaCtrl.sh --stop"),  { locked = true, description = "停止播放" })
 
 -- ============================================================
--- 截图快捷键
+-- 截图快捷键（Noctalia 内置截图 + 标注，替代原 grim/slurp/swappy 链）
 -- ============================================================
 
--- Print：直接截取全屏，保存并复制到剪切板
+-- Print：框选截图；浮层里按 C 直接复制保存，Enter/Space 进入标注编辑器
 hl.bind("Print",
-        hl.dsp.exec_cmd(sc .. "/ScreenShot.sh --now"),
-        { description = "全屏截图并复制到剪切板" })
+        hl.dsp.exec_cmd("noctalia msg screenshot-annotate"),
+        { description = "框选截图（C 直接复制，Enter 进标注）" })
 
--- Mod + Shift + S：框选区域，保存并复制到剪切板
+-- Mod + Shift + S：框选区域，松手即交付（复制并保存），不进编辑器
 hl.bind(MOD .. " + SHIFT + S",
-        hl.dsp.exec_cmd(sc .. "/ScreenShot.sh --area"),
-        { description = "框选截图并复制到剪切板" })
-
--- Alt + Print：框选区域，保存后用 Swappy 打开编辑
-hl.bind("ALT + Print",
-        hl.dsp.exec_cmd(sc .. "/ScreenShot.sh --edit"),
-        { description = "框选截图并打开 Swappy 编辑" })
+        hl.dsp.exec_cmd("noctalia msg screenshot-annotate --no-annotate --no-confirm-region"),
+        { description = "框选截图并复制到剪贴板" })
 
 -- ============================================================
 -- 调整窗口尺寸（可重复触发）

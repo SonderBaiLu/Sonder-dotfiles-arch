@@ -55,16 +55,11 @@ return {
 				-- 想临时开关某个缓冲区::Minuet virtualtext toggle
 				-- 想彻底关掉自动触发:把这个列表清空 {},改用 <A-y>? 手动触发
 				auto_trigger_ft = {
-					"rust",
-					"vue",
-					"typescript",
-					"typescriptreact",
-					"javascript",
-					"javascriptreact",
 					"html",
 					"css",
 					"yaml",
 					"lua",
+          "cd"
 				},
 				keymap = {
 					-- 默认所有键为空(nil),官方示例给的就是下面这套 Alt 系,

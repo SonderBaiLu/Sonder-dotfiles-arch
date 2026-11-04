@@ -19,13 +19,10 @@ pub const DEPS: &[(&str, bool)] = &[
     // 锁屏由 noctalia 内置锁屏负责（hyprlock 会与其冲突导致双锁屏）；
     // Polkit 授权弹窗由 noctalia 内置的认证代理负责（quickshell Services/Polkit 模块），
     // 不需要单独装 hyprpolkitagent；scripts/Polkit.sh 找不到二进制时会自动退出，仅作后备。
-    // 壁纸 / 截图 / 取色（awww 即原 swww，上游已改名，官方仓库 extra）
+    // 壁纸 / 取色（awww 即原 swww，上游已改名，官方仓库 extra）
+    // 截图 / 夜间护眼已由 noctalia 内置能力承担（screenshot-annotate / nightlight）
     ("awww", false),
     ("wallust", false),
-    ("grim", false),
-    ("slurp", false),
-    ("swappy", false),
-    ("hyprsunset", true),
     // 通知 / 外壳（通知守护进程由 noctalia 充当，不用 swaync；启动器用 noctalia，不用 rofi）
     ("noctalia", true),
     ("yad", false),
@@ -223,7 +220,7 @@ fn ensure_paru(st: &mut State) {
     {
         st.log("[OK]   paru 安装成功");
     } else {
-        st.log("[FAIL] paru 安装失败，AUR 包（noctalia/hyprsunset 等）将被跳过");
+        st.log("[FAIL] paru 安装失败，AUR 包（noctalia 等）将被跳过");
     }
     let _ = fs::remove_dir_all(&tmp);
 }

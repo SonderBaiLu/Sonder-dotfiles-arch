@@ -11,4 +11,4 @@ Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
 # 无人值守时不要卡在交互式凭据提示上
 Environment=GIT_TERMINAL_PROMPT=0
 Environment="GIT_SSH_COMMAND=ssh -o BatchMode=yes"
-TimeoutStartSec=120
+TimeoutStartSec=240

@@ -9,11 +9,44 @@ REPOS=(
   "$HOME/Documents/learning"
   "$HOME/Sonder-dotfiles-arch"
 )
-MSG="自动生成"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY_RUN=0
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
 log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*"; }
+
+# 本地模型生成提交信息；不可用时退回按改动目录生成摘要
+gen_message() {
+  local msg=""
+  if [ "${GIT_AUTO_SYNC_NO_LLM:-0}" != "1" ]; then
+    msg="$(python3 "$SCRIPT_DIR/generate_message.py" 2>/dev/null)"
+  fi
+  if [ -n "$msg" ]; then
+    printf '%s\n' "$msg"
+    return
+  fi
+  fallback_message
+}
+
+fallback_message() {
+  local names total adds dels verb areas
+  names="$(git diff --cached --name-only --no-color)"
+  total="$(printf '%s\n' "$names" | sed '/^$/d' | wc -l)"
+  adds="$(git diff --cached --name-status --no-color | grep -c '^A' || true)"
+  dels="$(git diff --cached --name-status --no-color | grep -c '^D' || true)"
+
+  verb="更新"
+  if [ "$adds" -eq "$total" ] && [ "$dels" -eq 0 ]; then verb="新增"; fi
+  if [ "$dels" -eq "$total" ] && [ "$adds" -eq 0 ]; then verb="删除"; fi
+
+  areas="$(printf '%s\n' "$names" \
+    | sed '/^$/d' \
+    | awk -F/ '{ if ($1 == ".config" && NF > 1) print $2; else print $1 }' \
+    | sort | uniq -c | sort -rn | head -3 | awk '{print $2}' \
+    | paste -sd '、' -)"
+  [ -n "$areas" ] || areas="仓库配置"
+  printf '%s %s（%s 个文件）\n' "$verb" "$areas" "$total"
+}
 
 # 本地领先上游时推送；没有上游或已同步则跳过
 push_repo() {
@@ -75,7 +108,7 @@ for repo in "${REPOS[@]}"; do
   if git diff --cached --quiet; then
     continue
   fi
-  if ! git commit -q -m "$MSG"; then
+  if ! git commit -q -m "$(gen_message)"; then
     log "[error] $name: git commit 失败"
     continue
   fi

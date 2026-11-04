@@ -7,6 +7,7 @@ description = "左右键连点器：开关式连点（左键/右键可选、每�
 [dependencies]
 evdev = "0.12"
 libc = "0.2"
+notify-rust = "4.18.2"
 
 [profile.release]
 strip = true

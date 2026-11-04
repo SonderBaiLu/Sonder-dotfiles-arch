@@ -130,3 +130,8 @@ action = "ScrollToBottom"
 [debug]
 log_level = "Warn"
 render_timer = false
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

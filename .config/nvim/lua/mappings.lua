@@ -20,6 +20,9 @@ require("which-key").add {
 -- ------------------------------------------------------------
 map("n", ";", ":", { desc = "进入命令行模式" })
 map("i", "jk", "<Esc>", { desc = "退出插入模式" })
+-- 终端模式(Claude 面板等):双击 Esc 退出终端模式,单按 Esc 仍发给终端程序
+-- 等价于 toggleterm 的 esc_quit="double";claudecode.nvim 的 snacks 终端同样适用
+map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "双击 Esc 退出终端模式" })
 map("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "打开/关闭文件树" })
 -- ------------------------------------------------------------
 -- 二、汉化:NvChad 内置快捷键的描述

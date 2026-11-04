@@ -1,21 +1,13 @@
-//! rightclick —— 通过 uinput 创建虚拟鼠标，模拟连点。
-//!
-//! 点击发生在当前光标位置，不移动光标；进程退出时虚拟设备自动销毁。
-//!
-//! 用法：
-//! - rightclick [选项]         开关：开始连点，再次运行即停止
-//! - rightclick stop           只停不开
-//! - rightclick once [选项] [次数] [总时长秒]
-//!                             一次性连点后退出
-//!
-//! 选项：
-//! - --left / --right          连点按键（默认 --right）
-//! - --rate N 或 -r N          每秒次数（默认 3，范围 1–100）
-//! - 位置数字参数等价于 --rate（如 rightclick 5 = 每秒 5 次）
-//!
-//! 开关原理：连点进程在锁文件（$XDG_RUNTIME_DIR/rightclick.lock）上持有
-//! flock，再次运行时抢不到锁，就读出其中记录的 pid 并向它发 SIGTERM。
-//! 终止后的清理（释放锁、销毁虚拟设备）全部由内核自动完成，无需信号处理。
+// - rightclick [选项]         开关：开始连点，再次运行即停止
+// - rightclick stop           只停不开
+// - rightclick once [选项] [次数] [总时长秒]
+// - --left / --right          连点按键（默认 --right）
+// - --rate N 或 -r N          每秒次数（默认 3，范围 1–100）
+// - 位置数字参数等价于 --rate（如 rightclick 5 = 每秒 5 次）
+//
+// 开关原理：连点进程在锁文件（$XDG_RUNTIME_DIR/rightclick.lock）上持有
+// flock，再次运行时抢不到锁，就读出其中记录的 pid 并向它发 SIGTERM。
+// 终止后的清理（释放锁、销毁虚拟设备）全部由内核自动完成，无需信号处理。
 
 use std::env;
 use std::fs::OpenOptions;

@@ -3,12 +3,12 @@ return {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPre", "BufNewFile" },
     opts = {
-      signs = {
-        add = { text = "󰐖" },          -- 新增：方框加号（U+F0416）
-        change = { text = "󰏬" },       -- 修改：方框铅笔（U+F03EC）
-        delete = { text = "󰍵" },       -- 删除：方框减号（U+F0375）
-        topdelete = { text = "󰜸" },    -- 从文件顶部删除：方框上箭头（U+F0738）
-        changedelete = { text = "󰏬" }, -- 修改且删除：沿用方框铅笔
+      signs = { -- 符号列改成细竖线（NvChad 同款）：行号旁不会出现一堵方块墙
+        add = { text = "┃" },          -- 新增：细竖线（gitsigns 默认，U+2503）
+        change = { text = "┃" },       -- 修改：细竖线
+        delete = { text = "󰍵" },       -- 删除：方框减号（U+F0375，与 NvChad 一致）
+        topdelete = { text = "‾" },    -- 从文件顶部删除：上划线（gitsigns 默认，U+203E）
+        changedelete = { text = "󱕖" }, -- 修改且删除：方框波浪（U+F1556，与 NvChad 一致）
       },
       on_attach = function(bufnr)
         local gs = package.loaded.gitsigns

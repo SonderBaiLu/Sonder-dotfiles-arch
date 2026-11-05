@@ -50,3 +50,6 @@ opt.timeoutlen = 300
 -- 分割窗口方向
 opt.splitright = true
 opt.splitbelow = true
+
+-- 浮窗统一圆角边框（补全菜单、文档浮窗、lazygit 等都会用上）
+opt.winborder = "rounded"

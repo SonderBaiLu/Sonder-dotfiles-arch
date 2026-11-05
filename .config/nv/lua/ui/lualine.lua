@@ -10,7 +10,7 @@ return {
         theme = "catppuccin-nvim", -- 用 catppuccin 提供的 lualine 主题，会自动跟随你设的 frappe 配色
         globalstatus = true, -- 全局状态栏：整个屏幕只保留一条，而不是每个窗口各一条
         component_separators = { left = "", right = "" }, -- 组件之间的分隔符（细竖线）
-        section_separators = { left = "", right = "" }, -- 区块之间的分隔符（斜切块）
+        section_separators = { left = "", right = "" }, -- 区块之间的分隔符（实心三角）：彩色分块观感就来自这里
         disabled_filetypes = { -- 这些文件类型不显示状态栏
           statusline = { "dashboard", "alpha", "snacks_dashboard" }, -- 启动仪表盘不显示
           winbar = {}, -- 顶部窗口栏（本配置没启用，留空即可）
@@ -18,21 +18,43 @@ return {
       },
       sections = {
         lualine_a = { "mode" }, -- 最左：当前模式（NORMAL / INSERT / VISUAL）
-        lualine_b = {
-          "branch", -- git 分支名（带分支图标）
-          "diff",   -- 与 git HEAD 的增删改统计
+        lualine_b = { "branch", "diff" }, -- 左二：git 分支名、增删改统计
+        lualine_c = { -- 左三：文件名
           {
-            "diagnostics", -- 诊断数量
-            symbols = {
-              error = "󰅗 ", -- 错误：方框 ×（U+F0157）
-              warn = "󰀧 ",  -- 警告：方框 !（U+F0027）
-              info = "󰬐 ",  -- 信息：方框字母 I（U+F0B10）
-              hint = "󰞋 ",  -- 提示：方框 ?（U+F078B）
+            "filename", -- 文件名组件
+            path = 1, -- 显示相对路径（0=仅文件名，1=相对路径，2=绝对路径）
+            symbols = { -- 文件名前的状态标记
+              modified = " ", -- 有未保存修改
+              readonly = " ", -- 只读
+              unnamed = "[无标题]", -- 未命名缓冲区
+              newfile = "[新文件]", -- 新文件
             },
           },
         },
-        lualine_c = { { "filename", path = 1 } }, -- 左三：文件名（path = 1 显示相对路径）
-        lualine_x = { "encoding", "fileformat", "filetype" }, -- 右三：编码、换行格式、文件类型
+        lualine_x = { -- 右侧第一组：诊断 + LSP + 项目名
+          {
+            "diagnostics", -- 诊断数量（错误/警告/信息/提示）
+            symbols = {
+              error = "󰅗 ", -- 错误：方框 ×（U+F0157）
+              warn = "󰀧 ", -- 警告：方框 !（U+F0027）
+              info = "󰬐 ", -- 信息：方框字母 I（U+F0B10）
+              hint = "󰞋 ", -- 提示：方框 ?（U+F078B）
+            },
+          },
+          {
+            "lsp_status", -- LSP 状态：建索引时转圈，空闲时显示客户端名
+            icon = "", -- 齿轮图标
+            show_name = true, -- 显示 LSP 客户端名（如 lua_ls / vue_ls）
+            symbols = {
+              spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }, -- 加载动画
+              done = "", -- 加载完成的标记
+            },
+          },
+          {
+            function() return vim.fn.fnamemodify(vim.fn.getcwd(), ":t") end, -- 取当前目录最后一段作为项目名
+            icon = "", -- 文件夹图标
+          },
+        },
         lualine_y = { "progress" }, -- 右二：光标在文件中的百分比位置
         lualine_z = { "location" }, -- 最右：当前行:列
       },

@@ -18,6 +18,10 @@ return {
         rust = { "rustfmt" },                     -- Rust 用 rustfmt
         javascript = { "prettierd", "prettier" }, -- JS 优先 prettierd，没有则回退 prettier
         typescript = { "prettierd", "prettier" }, -- TS 同上
+        vue = { "prettierd", "prettier" },        -- Vue 单文件组件（.vue）：模板/脚本/样式一起格式化
+        html = { "prettierd", "prettier" },       -- HTML
+        css = { "prettierd", "prettier" },        -- CSS
+        scss = { "prettierd", "prettier" },       -- SCSS
         json = { "jq" },                          -- JSON 用 jq 整理
         yaml = { "yamlfmt" },                     -- YAML 用 yamlfmt
         toml = { "taplo" },                       -- TOML 用 taplo

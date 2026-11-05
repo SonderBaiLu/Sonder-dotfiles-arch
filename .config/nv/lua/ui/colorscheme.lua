@@ -6,7 +6,7 @@ return {
 		lazy = false,
 		opts = {
 			flavour = "frappe", -- latte / frappe / macchiato / mocha
-			transparent_background = true,
+			transparent_background = false, -- 关掉透明：避免终端底色透上来，显得发灰发闷（NvChad 就是纯色底）
 			integrations = {
 				blink_cmp = true,
 				fzf = true,

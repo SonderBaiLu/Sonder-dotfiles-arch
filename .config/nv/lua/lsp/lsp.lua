@@ -12,7 +12,10 @@ return {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
     opts = {
-      ensure_installed = { "lua_ls" }, -- 先把配 nvim 自己的 lua 装上，其它按需加
+      ensure_installed = {
+        "lua_ls", -- 配 nvim 自己的 lua（写配置时补全/诊断）
+        "vue_ls", -- Vue 官方的 Volar：模板语法、组件跳转、标签补全
+      },
     },
   },
 

@@ -1,6 +1,6 @@
 return {
   {
-    "nvimdev/hlslens", -- 搜索高亮计数：n/N 跳转时在行首显示「第几个/共几个」
+    "kevinhwang91/hlslens", -- 搜索高亮计数（原作者的仓库地址，有永久重定向，比组织名更稳）
     event = { "BufReadPost", "BufNewFile" }, -- 打开文件就生效
     config = function()
       require("hlslens").setup({

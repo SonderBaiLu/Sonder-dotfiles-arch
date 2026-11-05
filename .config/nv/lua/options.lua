@@ -3,11 +3,11 @@ local opt = vim.opt
 
 -- 行号与相对行号
 opt.number = true
-opt.relativenumber = true
+opt.relativenumber = false
 
 -- 交互
 opt.mouse = "a"
-opt.showmode = false          -- 状态栏插件会显示模式
+opt.showmode = false -- 状态栏插件会显示模式
 opt.clipboard = "unnamedplus" -- 系统剪贴板
 opt.termguicolors = true
 

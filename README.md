@@ -118,6 +118,7 @@ installer/            # Rust 部署工具（cargo build --release）
     preflight.rs      # check 只读预检
 tools/
   rightclick/         # 连点器（binds.lua 调用 ~/.local/bin/rightclick）
+  obsidian/setup.sh   # Obsidian 笔记库初始化/校验（vault 在 ~/Obsidian/SondeNote）
 system/
   grub-catppuccin/    # GRUB Catppuccin Frappé 主题（sudo bash system/grub-catppuccin/install.sh 安装，--revert 回滚）
   noctalia-local-plugins/  # noctalia 本地插件 fork（速查面板 SUPER+/ 与状态栏歌词；修改/更新指南见其 README.md）
@@ -127,10 +128,11 @@ system/
 
 1. `git clone git@github.com:SonderBaiLu/Sonder-dotfiles-arch.git ~/Sonder-dotfiles-arch`
 2. `cd ~/Sonder-dotfiles-arch && ./bootstrap.sh`
-3. 可选：`sudo bash system/grub-catppuccin/install.sh` 应用 GRUB 主题（`--revert` 回滚）
-4. 按需启用用户服务：`systemctl --user daemon-reload && systemctl --user enable --now aria2.service protonplus.timer`
-5. 重建 `~/.config/fish/secrets.fish`（模板见 `secrets.fish.example`，未入库）
-6. 重新登录（`input` 组生效），从 tty1 登录即自动进入 Hyprland
+3. `./tools/obsidian/setup.sh`：装 Obsidian，并初始化/校验 `~/Obsidian/SondeNote`（见 [Obsidian 笔记库](#obsidian-笔记库)）
+4. 可选：`sudo bash system/grub-catppuccin/install.sh` 应用 GRUB 主题（`--revert` 回滚）
+5. 按需启用用户服务：`systemctl --user daemon-reload && systemctl --user enable --now aria2.service protonplus.timer`
+6. 重建 `~/.config/fish/secrets.fish`（模板见 `secrets.fish.example`，未入库）
+7. 重新登录（`input` 组生效），从 tty1 登录即自动进入 Hyprland
 
 仓库外的内容需要自行恢复：`/etc/fstab`（btrfs 子卷、`/mnt/数据`、NFS）、额外用户组、
 `~/.config/fish/secrets.fish`、壁纸（`~/Pictures/wallpapers`）。
@@ -144,6 +146,17 @@ system/
 - Hyprland 升级后跑 `hyprpm update` 按新版本重建插件，重启 Hyprland 生效
 - LibreOffice 主题调色板在 `.config/libreoffice/4/user/config/`，新环境部署后在颜色选择器的调色板里重新选一次
 - 校验语法：`luac -p hyprland.lua`（Lua）、`bash -n scripts/xxx.sh`（shell）
+
+## Obsidian 笔记库
+
+笔记库在 `~/Obsidian/SondeNote`，**不随 dotfiles 入库**（单独的 git 仓库），nvim 的 `obsidian.nvim` 也指向这里。
+
+- 初始化 / 恢复 + 校验：`./tools/obsidian/setup.sh`
+  - 没有笔记库时，用固定 commit 的 starter vault 种一份（预配置插件 + Minimal 主题 + CSS 片段）
+  - 已把笔记库推到自己的远端：`OBSIDIAN_VAULT_REPO=git@github.com:<你>/SondeNote.git ./tools/obsidian/setup.sh`
+  - 只检查：`./tools/obsidian/setup.sh --check`
+- 插件版本靠 vault 的 git 固定，不要用应用内「更新全部」整体升级；要升就单独升一个并提交
+- 模板上游保留在 `upstream` remote，需要对照原始设置时用 `git -C ~/Obsidian/SondeNote show upstream/main:<路径>`
 
 ## 注意
 

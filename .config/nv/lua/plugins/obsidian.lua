@@ -1,8 +1,9 @@
 return {
   {
     "epwalsh/obsidian.nvim", -- Obsidian 笔记增强（日记/反链/搜索）
-    version = "*", -- 用最新稳定版
+    version = "*",   -- 用最新稳定版
     ft = "markdown", -- 只在编辑 markdown 时加载
+    main = "obsidian", -- 主模块名是 obsidian（不带 .nvim），不写这行 lazy 自动 setup 会找不到模块
     dependencies = {
       "nvim-lua/plenary.nvim", -- 工具库依赖
     },

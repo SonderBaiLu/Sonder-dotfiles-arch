@@ -50,7 +50,6 @@ return {
       "saghen/blink.cmp",
     },
     config = function()
-      local lspconfig = require("lspconfig")
       -- 把 blink.cmp 的补全能力桥接给 LSP
       local capabilities = require("blink.cmp").get_lsp_capabilities()
 
@@ -74,23 +73,21 @@ return {
         end,
       })
 
-      -- 自动给 mason 装好的每个 server 套统一配置
-      vim.lsp.config("*",{
+      -- 全局默认配置："*" 表示对所有 server 生效（新版 nvim-lspconfig API）
+      vim.lsp.config("*", {
         capabilities = capabilities,
       })
 
-      -- Vue 技术栈显式配对：vue_ls 需要找到附着在 .vue 文件上的 TypeScript 客户端，
-      -- 否则会报 "Could not find ts_ls, vtsls, or typescript-tools"
-      lspconfig.vtsls.setup({
-        capabilities = capabilities,
-        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" }, -- 扩展支持 .vue 单文件组件
+      -- vtsls：TypeScript/JavaScript，并扩展支持 .vue（Volar 需要它处理 <script> 部分）
+      vim.lsp.config("vtsls", {
+        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" }, -- 让 vtsls 也接管 .vue
         settings = {
           vtsls = {
             tsserver = {
-              globalPlugins = { -- 让 vtsls 的 TS 服务认识 vue 语法
+              globalPlugins = { -- 让 TS 服务认识 Vue 语法
                 {
-                  name = "@vue/typescript-plugin", -- Vue 的 TypeScript 插件
-                  location = vim.fn.expand("~/.local/share/nv/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin"), -- 插件位置（藏在 vue_ls 的 node_modules 里）
+                  name = "@vue/typescript-plugin", -- Vue 官方 TS 插件
+                  location = vim.fn.expand("~/.local/share/nv/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin"), -- 插件实际位置
                   languages = { "vue" }, -- 只对 .vue 生效
                 },
               },
@@ -98,7 +95,9 @@ return {
           },
         },
       })
-      lspconfig.vue_ls.setup({ capabilities = capabilities }) -- Vue：模板 + 组件
+
+      -- 启用这两个 server（vue_ls 依赖 vtsls 已附加，否则会报 Could not find ts_ls/vtsls）
+      vim.lsp.enable({ "vtsls", "vue_ls" })
     end,
   },
 }

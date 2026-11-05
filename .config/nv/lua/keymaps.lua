@@ -42,11 +42,11 @@ map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "清除搜索高亮" })
 -- 拼接行不移动光标
 map("n", "J", "mzJ`z", { desc = "拼接行（保持光标）" })
 
--- 翻页与搜索保持居中
+-- 翻页保持居中
 map("n", "<C-d>", "<C-d>zz", { desc = "下半屏" })
 map("n", "<C-u>", "<C-u>zz", { desc = "上半屏" })
-map("n", "n", "nzzzv", { desc = "下一个匹配" })
-map("n", "N", "Nzzzv", { desc = "上一个匹配" })
+-- n / N 的「下一个/上一个匹配」键位已交给 hlslens（lua/plugins/hlslens.lua）：
+-- 它能显示匹配计数并保持居中，避免两处重复定义冲突
 
 -- 保存 / 退出
 map("n", "<leader>w", "<cmd>w<CR>", { desc = "保存" })

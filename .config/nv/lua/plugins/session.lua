@@ -1,6 +1,8 @@
 return {
   {
     "folke/persisted.nvim", -- 会话管理：记住上次打开的文件和窗口布局
+    enabled = false, -- ⚠️ 暂时禁用：此仓库还没过 GitHub「网页允许」白名单，克隆被拒。
+    -- 放行后（浏览器打开 github.com/folke/persisted.nvim 通过审核），删掉本行再 :Lazy sync 即可启用
     cmd = { "SessionToggle", "SessionSave", "SessionRestore", "SessionDelete" }, -- 手动命令才懒加载
     keys = {
       { "<leader>Ss", "<Cmd>SessionSave<CR>", desc = "保存会话" },    -- 空格+S s 手动保存当前会话

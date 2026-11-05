@@ -1,6 +1,8 @@
 return {
   {
     "kevinhwang91/hlslens", -- 搜索高亮计数（原作者的仓库地址，有永久重定向，比组织名更稳）
+    enabled = false, -- ⚠️ 暂时禁用：此仓库还没过 GitHub「网页允许」白名单，克隆被拒。
+    -- 放行后（浏览器打开 github.com/kevinhwang91/hlslens 通过审核），删掉本行再 :Lazy sync 即可启用
     event = { "BufReadPost", "BufNewFile" }, -- 打开文件就生效
     config = function()
       require("hlslens").setup({

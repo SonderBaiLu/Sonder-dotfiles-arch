@@ -32,6 +32,7 @@ require("configs.diagnostics") -- 诊断图标（符号列）
 require("lazy").setup({
   { import = "plugins" },
   { import = "configs.ui" },
+  {import = "plugins.lsp"}
 }, {
   checker = { enabled = false },        -- 不自动检查更新，需要时 :Lazy check
   change_detection = { notify = false },

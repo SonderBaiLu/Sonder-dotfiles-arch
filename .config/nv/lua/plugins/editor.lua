@@ -44,7 +44,6 @@ return {
       delay = 200,        -- 按 leader 后停顿 200ms 弹出提示
       spec = {            -- 给 leader 前缀分组，让空格菜单显示中文组名
         { "<leader>b", group = "缓冲区", mode = "n" },     -- 空格+b → 缓冲区操作
-        { "<leader>c", group = "代码", mode = "n" },       -- 空格+c → 代码操作（格式化等）
         { "<leader>d", group = "诊断", mode = "n" },       -- 空格+d → LSP 诊断
         { "<leader>e", group = "文件树", mode = "n" },     -- 空格+e → neo-tree
         { "<leader>f", group = "查找", mode = "n" },       -- 空格+f → fzf 查找

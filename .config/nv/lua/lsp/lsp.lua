@@ -16,6 +16,26 @@ return {
     },
   },
 
+  -- 格式化器等代码工具的自动安装（conform 只负责调用工具，不负责装，装靠这个）
+  {
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    event = "VeryLazy", -- 启动后空闲时加载，随后自动补装缺失工具
+    dependencies = { "williamboman/mason.nvim" },
+    opts = {
+      ensure_installed = { -- 启动时自动检查并补装这些工具（第一次启动会自动下载）
+        "stylua",    -- Lua 格式化
+        "shfmt",     -- shell 格式化
+        "ruff",      -- Python 格式化 + import 整理
+        "prettierd", -- JS/TS/Markdown 格式化
+        "jq",        -- JSON 格式化
+        "yamlfmt",   -- YAML 格式化
+        "taplo",     -- TOML 格式化
+      },
+      auto_update = false, -- 不自动升级工具版本，保持稳定
+      run_on_start = true, -- nvim 启动时自动补装缺失的工具
+    },
+  },
+
   -- LSP 客户端配置
   {
     "neovim/nvim-lspconfig",

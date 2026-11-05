@@ -4,7 +4,7 @@ return {
     event = { "BufReadPre", "BufNewFile" }, -- 打开文件就加载，保证保存时可用
     cmd = { "ConformInfo" }, -- 查看当前文件的格式化器状态
     keys = {
-      { "<leader>cf", function() require("conform").format({ async = true }) end, desc = "格式化当前文件" }, -- 空格+cf 手动格式化
+      { "<leader>fm", function() require("conform").format({ async = true }) end, desc = "格式化" }, -- 空格+f m 手动格式化
     },
     opts = {
       -- 各文件类型对应的格式化器（用 :Mason 安装对应工具，如 stylua / shfmt / ruff / prettierd）
@@ -23,17 +23,18 @@ return {
         toml = { "taplo" },                       -- TOML 用 taplo
         markdown = { "prettierd" },               -- Markdown 用 prettierd
       },
-      -- 保存时自动格式化
-      format_on_save = function(bufnr)
-        -- 两个手动开关：全局 vim.g.disable_autoformat，或单文件 vim.b[bufnr].disable_autoformat
-        if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
-          return -- 返回 nil = 本次保存跳过格式化
-        end
-        return {
-          timeout_ms = 500,        -- 格式化器 500ms 没跑完就放弃，不卡保存
-          lsp_format = "fallback", -- 优先用 LSP 的格式化，LSP 没有时才回退到上面的列表
-        }
-      end,
+      -- 手动格式化模式：不启用「保存自动格式化」，按空格+f m 才格式化。
+      -- 想改回保存自动格式化时，取消下面这段注释即可：
+      -- format_on_save = function(bufnr)
+      --   -- 两个手动开关：全局 vim.g.disable_autoformat，或单文件 vim.b[bufnr].disable_autoformat
+      --   if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+      --     return -- 返回 nil = 本次保存跳过格式化
+      --   end
+      --   return {
+      --     timeout_ms = 500,        -- 格式化器 500ms 没跑完就放弃，不卡保存
+      --     lsp_format = "fallback", -- 优先用 LSP 的格式化，LSP 没有时才回退到上面的列表
+      --   }
+      -- end,
     },
   },
 }

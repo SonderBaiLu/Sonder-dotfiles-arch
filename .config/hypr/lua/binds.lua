@@ -235,10 +235,10 @@ hl.bind("Print",
         hl.dsp.exec_cmd("noctalia msg screenshot-annotate"),
         { description = "框选截图（C 直接复制，Enter 进标注）" })
 
--- Mod + Shift + S：框选区域，松手即交付（复制并保存），不进编辑器
+-- Mod + Shift + S：直接弹出选区，松手立即保存（同时复制到剪贴板），不确认、不记忆上次区域、不进编辑器
 hl.bind(MOD .. " + SHIFT + S",
-        hl.dsp.exec_cmd("noctalia msg screenshot-annotate --no-annotate --no-confirm-region"),
-        { description = "框选截图并复制到剪贴板" })
+        hl.dsp.exec_cmd("noctalia msg screenshot-region --save-to-file --copy-to-clipboard --no-annotate --no-confirm-region --no-remember-last-region"),
+        { description = "框选截图并直接保存" })
 
 -- ============================================================
 -- 调整窗口尺寸（可重复触发）

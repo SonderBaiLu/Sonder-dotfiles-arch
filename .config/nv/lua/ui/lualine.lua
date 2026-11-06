@@ -109,7 +109,18 @@ return {
 				lualine_y = {}, -- 右二：留空（NvChad 没有百分比段）
 				lualine_z = { "location" }, -- 最右：行:列
 			},
-			extensions = { "quickfix", "mason", "lazy" }, -- 给这些界面套用对应配色（oil 已移除，这里不带）
+			extensions = {
+				"quickfix", "mason", "lazy",
+				{
+					filetypes = { "neo-tree" },
+					sections = {
+						lualine_a = { { function() return "文件树" end, color = { fg = M.base, bg = M.mauve } } },
+						lualine_b = {},
+						lualine_c = { function() return vim.fn.fnamemodify(vim.fn.getcwd(), ":t") end },
+						lualine_x = {}, lualine_y = {}, lualine_z = {},
+					},
+				},
+			},
 		},
 	},
 }

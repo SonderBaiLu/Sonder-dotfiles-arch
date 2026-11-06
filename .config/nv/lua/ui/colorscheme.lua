@@ -11,6 +11,20 @@ return {
 			custom_highlights = function()
 				return {
 					ColorColumn = { bg = "#45405e" }, -- 低饱和深紫色列参考线，呼应 Mocha 的 mauve
+					NeoTreeDirectoryIcon = { fg = "#cba6f7" },
+					NeoTreeDirectoryName = { fg = "#cdd6f4" },
+					NeoTreeRootName = { fg = "#cba6f7", bold = true },
+					NeoTreeExpander = { fg = "#cba6f7" },
+					NeoTreeIndentMarker = { fg = "#585b70" },
+					NeoTreeCursorLine = { bg = "#45405e" },
+					NeoTreeEndOfBuffer = { fg = "#313244", bg = "NONE" },
+					WhichKeyNormal = { bg = "#242334" },
+					WhichKeyBorder = { fg = "#cba6f7", bg = "#242334" },
+					WhichKeyTitle = { fg = "#cba6f7", bg = "#242334", bold = true },
+					WhichKey = { fg = "#cba6f7", bold = true },
+					WhichKeyGroup = { fg = "#b4befe" },
+					WhichKeyDesc = { fg = "#cdd6f4" },
+					WhichKeySeparator = { fg = "#6c7086" },
 					Comment = { fg = "#605f6f" }, -- 注释：base46 的 light_grey，比官方 overlay0 更暗
 					["@comment"] = { fg = "#605f6f" }, -- treesitter 语法组，同上
 				}

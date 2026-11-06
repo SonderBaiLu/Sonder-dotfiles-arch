@@ -40,7 +40,9 @@ return {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
-      preset = "classic", -- 经典布局风格
+      preset = "modern", -- 居中的圆角提示面板
+      win = { padding = { 1, 2 }, wo = { winblend = 0 } },
+      layout = { spacing = 4 },
       delay = 200,        -- 按 leader 后停顿 200ms 弹出提示
       spec = {            -- 给 leader 前缀分组，让空格菜单显示中文组名
         { "<leader>b", group = "缓冲区", mode = "n" },     -- 空格+b → 缓冲区操作

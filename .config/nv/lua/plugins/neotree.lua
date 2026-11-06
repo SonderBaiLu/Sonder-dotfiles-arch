@@ -12,6 +12,18 @@ return {
     },
     opts = {
       close_if_last_window = true, -- 若 tree 是标签页里最后一个窗口，则一并关闭（true=关闭）
+      enable_cursor_hijack = true, -- 光标落在文件名上，避免左侧出现突兀的光标块
+      event_handlers = {
+        {
+          event = "neo_tree_window_after_open",
+          handler = function(args)
+            vim.api.nvim_win_call(args.winid, function()
+              vim.opt_local.fillchars:append({ eob = " " }) -- 隐藏空白区的 ~
+              vim.opt_local.colorcolumn = "" -- 文件树不显示代码列参考线
+            end)
+          end,
+        },
+      },
       popup_border_style = "",   -- 弹窗边框风格（"NC" 为圆角；Neovim v0.11+ 可设 "" 用全局 winborder）
 
       clipboard = {
@@ -37,7 +49,7 @@ return {
           indent_marker = "│",            -- 缩进参考线字符
           last_indent_marker = "└",       -- 最后一级缩进参考线字符
           highlight = "NeoTreeIndentMarker", -- 缩进参考线高亮组
-          with_expanders = nil,           -- 是否显示展开/折叠图标（nil 且启用文件嵌套时自动开启）
+          with_expanders = true,          -- 始终显示目录展开/折叠箭头
           expander_collapsed = "",       -- 折叠状态图标
           expander_expanded = "",        -- 展开状态图标
           expander_highlight = "NeoTreeExpander", -- 展开/折叠图标高亮组
@@ -125,7 +137,7 @@ return {
       -- 窗口配置
       window = {
         position = "left", -- 窗口位置（左侧）
-        width = 25,        -- 窗口宽度
+        width = 32,        -- 给文件名和目录层级留出空间
         mapping_options = {
           noremap = true,  -- 禁止递归映射
           nowait = true,   -- 无需等待后续按键

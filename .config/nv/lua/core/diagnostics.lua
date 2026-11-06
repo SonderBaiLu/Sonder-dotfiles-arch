@@ -1,6 +1,9 @@
--- 诊断图标：统一 Neovim 符号列（sign column）的显示
+-- 诊断显示：符号列提示位置，光标所在行下方自动展开详细信息
 -- 图标取自 icons.lua 里 B 组那一套，与 neotree / bufferline / lualine 保持一致
 vim.diagnostic.config({
+  virtual_text = false, -- 不把长错误信息挤在代码行尾
+  virtual_lines = { current_line = true }, -- 移到有诊断的行时自动显示，移开后收起
+  underline = true,
   signs = {
     text = {
       [vim.diagnostic.severity.ERROR] = "󰅗", -- 错误：方框 ×（U+F0157）

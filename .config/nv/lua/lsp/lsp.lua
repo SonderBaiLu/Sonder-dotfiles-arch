@@ -96,8 +96,9 @@ return {
         },
       })
 
-      -- 启用这两个 server（vue_ls 依赖 vtsls 已附加，否则会报 Could not find ts_ls/vtsls）
-      vim.lsp.enable({ "vtsls", "vue_ls" })
+      -- Rust 使用 rustup 已安装的 rust-analyzer（无需 Mason 重复安装）。
+      -- vue_ls 依赖 vtsls 已附加，否则会报 Could not find ts_ls/vtsls。
+      vim.lsp.enable({ "vtsls", "vue_ls", "rust_analyzer" })
     end,
   },
 }

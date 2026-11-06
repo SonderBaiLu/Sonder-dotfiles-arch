@@ -10,6 +10,7 @@ return {
 			-- 对齐 NvChad base46 的配色细节（base46 是定制版 Mocha，注释比官方更暗）
 			custom_highlights = function()
 				return {
+					ColorColumn = { bg = "#45405e" }, -- 低饱和深紫色列参考线，呼应 Mocha 的 mauve
 					Comment = { fg = "#605f6f" }, -- 注释：base46 的 light_grey，比官方 overlay0 更暗
 					["@comment"] = { fg = "#605f6f" }, -- treesitter 语法组，同上
 				}

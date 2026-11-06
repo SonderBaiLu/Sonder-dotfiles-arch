@@ -21,6 +21,7 @@ opt.smartindent = true
 -- 显示
 opt.signcolumn = "yes"
 opt.cursorline = true
+opt.colorcolumn = "88" -- 行长度参考线，只做视觉提示，不自动换行
 opt.wrap = false
 opt.scrolloff = 8
 opt.sidescrolloff = 8

@@ -1,0 +1,34 @@
+= 仓库协作约定
+
+写给以后接手的任何工具或 AI，也写给未来的自己。这些是长期有效的规矩，改动仓库前先过一遍。
+
+== 基本偏好
+
+* **工具脚本用 Rust**。独立小工具/安装器一律 Cargo 项目，尽量零依赖，中文注释。别拿 bash/Python 交差。
+* **安装命令我自己跑**。sudo pacman / paru / pip / venv 之类，只把命令列出来，别代跑（本机 sudo 要密码，无 NOPASSWD）。agent 只做只读排查和配置。
+* **注释全中文，且必须准确**。写之前读透代码；描述现状，不留"原为 X 已删"式历史注脚，不留死软件名。错误注释比没注释更糟。
+* **面向用户的提示语用中文**（notify-send 文案等）。
+* **通知图标用 freedesktop 标准名**（audio-volume-*、image-x-generic 这类），别写文件路径；用之前在 `/usr/share/icons/Papirus*` 里 find 验证名字真存在。
+* **核对 Hyprland API 优先官方 wiki 和官方 example**，别一头扎进源码无限 grep。
+
+== 软件栈铁律
+
+* 桌面服务归 noctalia 一家：启动器、通知、锁屏、Polkit。任何与它功能重叠的包，往 DEPS 或启动项加之前先问。
+* 弃用清单见 xref:software-choices.adoc[]，别加回去。
+* 不留死软件痕迹：删软件就连同配置、注释、变量名、绑定一起清干净。
+
+== 改动与验证
+
+* 改仓库前先读 README 末尾「架构与修改指南」，别重新考古。
+* 通用验证清单见 README C.17（luac / bash -n / cargo check / hyprctl configerrors / git status），改完过一遍。
+* 提交规范：中文 conventional commits（feat/fix/chore/docs/refactor），一个主题一个提交，README 相关小节同步改。
+* 新应用配置入库按 README C.12 流程（mv 进仓库 + 相对软链 + gitignore 策略 + DEPS + cargo check）。
+* XDG 启动器覆盖按 C.18（docs 里的完整写法见 xref:xdg-desktop.adoc[]）。
+
+== 敏感信息
+
+仓库里有敏感文件约定（见 `.gitignore`）：令牌/密钥类文件绝不入库、绝不被工具 cat/grep 内容、绝不进 git 历史。具体名册看 `.gitignore` 的"敏感信息"段。若怀疑某密钥曾进过历史，在签发方撤销轮换，不是靠删提交。
+
+== 知识沉淀
+
+本机排障结论、踩坑记录写进 `docs/`（AsciiDoc）。短平快的维护操作看 README，深入的主题知识和"为什么"看 docs。两处都提到的东西：README 管"怎么做"，docs 管"为什么"。

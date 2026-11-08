@@ -1,0 +1,77 @@
+= XDG 应用启动器 · .desktop 写法与覆盖
+
+== .desktop 是什么
+
+Linux 图形应用的启动器元数据：应用叫什么、图标、怎么启动、属于什么分类。启动器（noctalia launcher、任务栏）和文件关联都读它。系统应用的放 `/usr/share/applications/`，用户的放 `~/.local/share/applications/`——**同名时用户的赢**，这就是"覆盖"。
+
+== 最小可用模板
+
+[source,ini]
+----
+[Desktop Entry]
+Type=Application
+Name=Firefox
+Comment=浏览器
+Exec=prime-run /usr/lib/firefox/firefox %u
+Icon=firefox
+Terminal=false
+Categories=Network;WebBrowser;
+----
+
+字段要点：
+
+[cols="1,3"]
+|===
+|字段 |说明
+|Type |Application（应用）/ Link（链接）/ Directory（目录）
+|Exec |启动命令。路径写绝对路径最稳
+|Icon |写主题图标名（如 `firefox`）比写文件路径稳，随主题走
+|Terminal |true 则在终端里跑（TUI 程序用）
+|Categories |分号分隔，菜单分类用
+|NoDisplay |true 则不出现在启动器但文件关联仍可用
+|OnlyShowIn / NotShowIn |按桌面环境显隐
+|===
+
+Exec 支持字段代码（启动器填进来的参数）：
+
+[cols="1,2"]
+|===
+|%u |单个 URL/文件
+|%U |多个 URL/文件
+|%f / %F |单个 / 多个本地文件（会先下载/解包到本地）
+|%i |把 Icon= 值当参数展开
+|%c |翻译后的 Name
+|===
+
+== 覆盖系统应用的规矩
+
+1. 从 `/usr/share/applications/<app>.desktop` 拷一份到 `~/.local/share/applications/`，同名即覆盖。
+2. 只改要改的行，别整份重写——包更新后上游变了，diff 一眼就能看出自己改了哪几行。
+3. 改完验证：
+
+[source,bash]
+----
+desktop-file-validate ~/.local/share/applications/foo.desktop   # 语法检查
+gtk-launch foo.desktop                                          # 试启动（不带 .desktop 后缀也认）
+----
+
+4. 包更新会覆盖 `/usr/share/applications/` 里的原版，**自己那份不动**，但上游如果改了 Exec 之类的行为，要主动合并进覆盖版。
+
+== 实例：Firefox 挂独显
+
+本仓库 `.local/share/applications/firefox.desktop` 是从系统版拷来的覆盖版，改动只有一处：四条 Exec 全部前面加 `prime-run`，让 Firefox 渲染走 4070、核显只管桌面（背景见 xref:machine.adoc[]）。
+
+收纳约定（仓库内逐文件入库 + 白名单）：
+
+* 仓库位置 `.local/share/applications/`，原位建相对符号链接（和 `.config` 一个路数）。
+* `.gitignore` 对 `.local/share/*` 默认全排除、按白名单放行——wine 生成的一堆 `wine-*.desktop` 是运行时垃圾，永远不入库。
+* 维护步骤详见 README「架构与修改指南」C.18。
+
+== 开机自启的 .desktop
+
+`~/.config/autostart/*.desktop` 是另一套：桌面会话起来时自动执行（freedesktop autostart 规范，格式和上面一样）。本机这部分**不入仓库**——装哪些自启应用（Clash/ToDesk/百度网盘这类）本身是装机时的个人决策，重装时按需重建。
+
+[TIP]
+====
+想让某个 .desktop 在启动器里消失但不删文件：加一行 `NoDisplay=true`。删包带不走的是 `/usr/share/` 里的，删用户覆盖不影响包本体。
+====

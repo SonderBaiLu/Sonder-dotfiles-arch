@@ -1,0 +1,103 @@
+= 这台机器与 GPU/性能
+:url-wiki: https://wiki.hypr.land
+
+== 硬件档案
+
+[cols="2,3"]
+|===
+|机器 |华硕 ROG Strix G713PI
+
+|CPU |AMD Ryzen 9 7845HX（12C/24T，Dragon Range，桌面级 PCIe 拓扑）
+
+|核显 |AMD Radeon 610M（Raphael 内置，RDNA2 2CU）—— 08:00.0
+
+|独显 |NVIDIA GeForce RTX 4070 Max-Q / Mobile（AD106M）—— 01:00.0
+
+|内存 |64GB
+
+|屏幕 |2560x1440 @ 160Hz，内屏物理接在核显上（AMD 平台固定如此）
+|===
+
+内核 `linux-zen`，驱动 `nvidia-open-dkms`。IOMMU 已启用（27 个分组）。
+
+== 设备映射（别记反）
+
+[cols="2,1,1,2"]
+|===
+|GPU |DRM card |render node |IOMMU 组
+|NVIDIA 4070 |card0 |renderD129 |组 14（只有显卡+HDMI 音频，干净）
+|AMD 610M |card1 |renderD128 |—
+|===
+
+应用渲染走 render node，不持 card 节点。`/dev/dri/by-path/` 里按 PCI 地址对照，不用猜。
+
+HDMI 外接口物理连在 4070 上；内屏在 610M 上。BIOS 有 MUX，保持 Hybrid 模式。
+
+== 混合显卡调度
+
+日常桌面（渲染+合成+2K160 扫描输出）全在 610M 上，4070 平时只是 offload 备胎。610M 只有 2 CU，跑桌面合成绰绰有余，但一个重页签就能把它打满。
+
+经验法则：**吃 GPU 的大户丢给 4070，桌面留给核显**。
+
+- Firefox 已经这么做了：`~/.local/share/applications/firefox.desktop` 覆盖版四条 Exec 全加 `prime-run`（本仓库 `.local/` 白名单收纳，见 xref:xdg-desktop.adoc[]）。判断某应用走哪块卡：`nvidia-smi` 看进程列表。
+- ollama 常驻占 4070 约 4.7GB 显存但不烧 util；跑完五分钟自动卸模型（`OLLAMA_KEEP_ALIVE=5m`，见 xref:services.adoc[]）。
+- 给新应用挂独显：终端里 `prime-run <app>`，或照 Firefox 的样子改 desktop 覆盖。
+
+[TIP]
+====
+prime-run 本体就是三个环境变量：`__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia`。没有它就等于 `env` 那三行。
+====
+
+== 踩过的 GPU 坑
+
+=== Firefox 打满核显（2026-11-08）
+
+症状：没跑游戏但核显 100%，间歇性桌面卡顿。
+
+根因：某个页签的 WebRender 渲染把 610M 吃满（前台+有动画内容时满，后台归零，所以"有时候"卡）。610M 满载时 Hyprland 开窗动画、Alt+Tab 全排队。
+
+归因方法：`kill -STOP <pid>` 冻结进程看占用掉不掉——一次一个，最快。别指望 fdinfo，本内核 amdgpu 没有引擎计时字段。
+
+解法就是上面的 prime-run。壁纸（awww 静态 PNG）无罪，Hyprland/noctalia 无罪。
+
+=== VLC 绿屏（2026-10 修）
+
+VLC 在混合显卡下走自己的 XWayland/EGL 路径初始化 VA-API 失败，上屏绿帧。系统 VA-API 没坏（ffmpeg 直连两个 render 节点都正常），坏的只是 VLC。
+
+修复已入库：`~/.config/vlc/vlcrc` 设 `avcodec-hw=none` 改 CPU 软解。另一个坑：光在 Hyprland 设窗口尺寸没用，VLC 的 `qt-video-autoresize` 会按视频原始分辨率顶掉规则，vlcrc 里已一并关掉。
+
+mpv 对混合显卡硬解处理更好，遇到 VLC 类问题可以对照。
+
+== GPU 排障命令
+
+[source,bash]
+----
+# 占用采样（百分比）
+cat /sys/class/drm/card1/device/gpu_busy_percent   # 核显
+cat /sys/class/drm/card1/device/vcn_busy_percent   # 核显视频解码引擎（区分渲染/硬解）
+nvidia-smi                                         # N 卡 util + 进程列表 + 显存
+
+# 判断某应用用的哪块卡：列进程 fd 指向的 render node
+ls -l /proc/<pid>/fd | grep dri
+----
+
+== 游戏 / 虚拟机评估存档（2026-11-08）
+
+想做游戏 VM 时全面诊断过，结论存这里免得重测：
+
+* 本机 VFIO 硬件条件全绿：IOMMU 组 14 只有显卡+音频，HX 平台桌面级拓扑，比典型笔记本成功率高得多。
+* 但整套 vfio/modprobe/initramfs 配置做到一半放弃——嫌麻烦。硬件结论留着，回头想搞不用重测。
+* TrueNAS 的 VM（直通 GTX 1050）实测原神、无畏契约国服都能跑 90 帧。国服无畏契约用腾讯 ACE 反作弊，KVM 能过；国际服 Vanguard 是另一回事，VM 里别碰。
+* 4070 Mobile 直通的话性能预期：原神 2K 高画质 100+ 帧，无畏契约 200+。
+* 备选路线：原神走 aagl（an-anime-game-launcher，Flathub 版更新及时，国服要 china 变体、B 服兼容差）；无畏契约国服从 TrueNAS VM 串流（Sunshine/Moonlight）本机零改动。
+
+[CAUTION]
+====
+回避陷阱：本机 VM 不直通 GPU 就没有 3D 性能，virgl 那套别考虑。上次在宿主机开 TUN 代理（sing-box strict_route）会把 VM 转发流量全掐掉，症状是网关 ping 得通、公网全断。
+====
+
+== 硬件监控
+
+Mission Center（Ctrl+Shift+Esc，二进制 `missioncenter`）当任务管理器用，N 卡读数走 NVML。侧栏的 br-*/veth* 是 Docker 虚拟网卡，风扇是 hwmon 传感器，看着碍事点铅笔隐藏。
+
+CPU 温度看 k10temp 的 Tctl，Raphael 待机 80°C+ 属正常，别慌。

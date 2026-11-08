@@ -1,0 +1,70 @@
+= noctalia 桌面外壳
+
+noctalia 基于 quickshell，是整个桌面的外壳：状态栏、通知、启动器（Super+D）、锁屏、Polkit 全在它身上。原则：**桌面系统服务尽量由 noctalia 一家提供**，别往系统里塞功能重叠的包。
+
+== 内置服务（别装替代品）
+
+* **Polkit 认证代理**：进程内实现，无需 hyprpolkitagent（装过，卸掉后弹窗一直正常）。
+* **锁屏**：内置，装 hyprlock 会双锁屏。锁屏走 IPC：
+
+[source,bash]
+----
+noctalia msg session lock                 # 或 suspend / lock-and-suspend / logout / reboot / shutdown
+----
+
+[NOTE]
+====
+这类内置组件没有独立进程，`ps | grep polkit` 什么都搜不到——不能因为 ps 里没有就断定服务缺失。看包内文件和 `noctalia msg --help`。
+====
+
+== 配置分两层
+
+[cols="1,2,1"]
+|===
+|层 |位置 |优先级
+|手写层 |`~/.config/noctalia/*.toml`（本仓库收纳） |低
+|GUI 层 |`~/.local/state/noctalia/settings.toml` |高
+|===
+
+两层都热重载。GUI 改过的键会压住手写层同名键——**手写了不生效，先查 state 层有没有同名键**，删掉它手写层才接管。校验：`noctalia config validate`。
+
+状态栏布局在 `~/.config/noctalia/bar.toml`：两端各 6 个 sysmon（网速/CPU/GPU 温度频率）+ 歌词。sysmon 一个实例一项，stat 取值有 cpu_usage/cpu_temp/cpu_freq/gpu_usage/gpu_temp/gpu_vram/ram_used/net_rx/net_tx 等。GPU 读数走 NVML，独显睡着时自动改报 AMD 核显。
+
+== 插件系统
+
+三源：official / community（git 仓库）、local（path）。材质化副本在 `~/.local/state/noctalia/plugins/materialized/<source>/<folder>`，插件数据在 `.../data/<id>/`。
+
+[source,bash]
+----
+noctalia msg plugins list / enable / disable / update / source
+noctalia msg panel-toggle <作者/插件:面板>
+----
+
+[IMPORTANT]
+====
+每个 `noctalia.state.watch` 回调有约 25ms 的 Luau CPU 预算，硬编码不可配。把重活塞进单个回调，回调会被杀、缓存不落盘、面板永远"加载中"。修法是分片：每次 `noctalia.state.set()` 都会用全新预算窗口重触发 watcher，把活拆到多个回调里推进。
+====
+
+== 两个本地 fork（已收编本仓库 system/noctalia-local-plugins/）
+
+[cols="2,3"]
+|===
+|插件 |说明
+|qicat/keybind-cheatsheet |快捷键速查面板（SUPER+/），fork 自 kenn/keybind-cheatsheet，修了 CPU 预算 + 大分类切块 + 视觉打磨。数据源 hyprctl binds -j，显示 binds.lua 的中文 description
+|qicat/media-lyrics |状态栏两端歌词（左奇数行右偶数行轮替），fork 自 tranzem/media-lyrics，busctl+curl，LRCLIB+网易云 fallback
+|===
+
+`~/.local/share/noctalia-local-plugins/<名>` 是指向仓库的符号链接，**改代码改仓库**，重装自动恢复。改 fork 前先读 `system/noctalia-local-plugins/README.md`（完整差异清单和重载步骤在那）。同名单行版保持 disabled，别重复启用。
+
+fork 要点：复制材质化副本后改 `plugin.toml` 的 `id`；panel/widget 里硬编码的 `PANEL_ID = "作者/插件:条目"` 必须一并改。改 entry→file 绑定后要 disable+enable 才重绑脚本文件，改纯逻辑热重载就行。
+
+其他已备未启用：`noctalia/notes` 便签（MOD+ALT+N）、HVE 可视化编辑器（linux-fertxo，v2.0.2，要求 Lua 配置正好匹配；启用时会往 hyprland.lua 末尾追加 overlay 加载行，总开关 `is_system_active` 默认 false）。
+
+== 截图
+
+WIN+SHIFT+S 框选直存 `~/Pictures/Screenshots` 并复制，Print 进标注编辑器。
+
+[WARNING]
+====
+noctalia 设置 `shell.screenshot` 里 `remember_last_region = true` 时，配合 `--no-confirm-region` 按键会直接套用上次选区而不重新框选——"选区弹不出来"先查这个。
+====

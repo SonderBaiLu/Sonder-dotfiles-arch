@@ -1,0 +1,83 @@
+= Hyprland Lua 配置
+
+== 为什么是 Lua
+
+Hyprland 0.56 起内置原生 Lua 配置，0.57 移除了 `.conf`。本仓库整个 hypr 配置是**原生 Lua**（不是"Lua 生成 conf"的生成器路线），入口 `hyprland.lua`，`require()` 拆模块。
+
+[cols="1,2"]
+|===
+|文件 |内容
+|`lua/defaults.lua` |显示器布局常量、设备名、终端等变量
+|`lua/environment.lua` |GUI 进程环境变量（hl.env）
+|`lua/appearance.lua` |主题色、装饰；动画方案在 `animations.enabled` 之后加载
+|`lua/rules.lua` |窗口规则（float/尺寸/透明度/标签）
+|`lua/behavior.lua` |事件钩子（urgent 拉窗等）
+|`lua/binds.lua` |全部快捷键，每条带中文 description
+|`lua/animations/` |五套动效方案 + 随机加载器
+|`lua/plugins.lua` |hyprpm 插件（dynamic-cursors，tilt+shake）
+|===
+
+配置键名转换规则：`:` → `.`，`-` → `_`。全局命名空间是 `hl`。
+
+== 排障三件套
+
+[source,bash]
+----
+hyprctl reload config-only && hyprctl configerrors   # 改完必跑，第二个必须为空
+hyprctl animations                                    # 核对当前生效动效
+hyprctl binds -j                                      # 绑定注册核对
+----
+
+[WARNING]
+====
+`hyprctl configerrors` **不报动画样式错误**。写错的 `style` 只在屏幕顶部弹一个通知，configerrors 依旧返回空。验证动画样式合法性用 `hyprctl repl "hl.animation({...})"` 看是否回 `unknown style`。
+====
+
+== dispatch 的 Lua 写法
+
+`hyprctl dispatch` 在 Lua 配置下是把参数塞进 `hl.dispatch(...)` 当代码执行，裸字符串全是语法错误：
+
+[source,bash]
+----
+# 错
+hyprctl dispatch togglefloating
+# 对
+hyprctl dispatch 'hl.dsp.window.float()'
+hyprctl dispatch 'hl.dsp.window.float({toggle=true})'
+----
+
+`hyprctl keyword` 在 Lua 配置下**整个失效**（`keyword can't work with non-legacy parsers`），动态改配置只能走 Lua。
+
+== 记牢的 API 事实（0.56/0.57 实测）
+
+- `hl.dsp.focus` 只认 5 个键：direction / monitor（只认显示器名，不认 l/r）/ window / urgent_or_last / last。
+- Alt+Tab 的 MRU 不是 cyclenext（实测会落回原窗口），正确实现是 `get_last_window()` + `focus_history_id`，见 binds.lua。
+- 跨工作区搬窗口：先 `focus({window=address})` 再 `window.move({workspace=id})`；浮动窗口搬完要补 `bring_to_top()`，否则沉底。
+- 窗口规则的静态效果（float/size/center）只在开窗时评估一次，已开的窗口不受影响；tag 效果是动态的。
+- 事件回调参数是 userdata 的 HL.Window，print 不进 rollinglog，调试写文件。
+- reload 会以全新 Lua 状态重跑整个配置；`hyprland.start` 回调（exec-once 类）不重跑。
+- dsp 构建器参数不合法不抛错，只弹通知返回零值，pcall 拦不住——每步构建后判空再派发。
+
+== 动画
+
+- `speed` 单位是 1/10 秒的**时长**，越大越慢（曾有注释写反，已修）。
+- 曲线只有 `hl.curve` 注册过的 `bezier` / `spring`，`hl.animation` 用 `bezier=` 或 `spring=` 二选一指。
+- 样式兼容矩阵：窗口类（windows*）支持 slide/slidefade/slidevert/popin，**不支持 fade**；工作区类（workspaces*）支持 slide/slidefade/slidevert/fade，**不支持 popin**；layers* 全支持；`popout` 哪都不合法。一行非法会中断整个 apply()，后面全留默认 0.1s——表现为"全部生硬"，先查有没有非法行。
+- 弹簧参数 0.57 推荐 `mass=1, stiffness=878.5, dampening=59.29`；字段名是 `dampening`（0.57.1 实测）。
+- `decoration.shadow.render_power` 上限 4（0.57 收紧）。
+- borderangle 对纯色边框没效果，纯耗电，保持关闭。
+
+五套方案在 `lua/animations/`：flow（慢滑 1.2s）/ veil（纯 fade）/ drop（垂直）/ bounce（弹簧）/ snap（最快 0.5s），覆盖全部 35 个 leaf。MOD+ALT+A 随机切（= reload config-only，本身不播演示，开个窗口才看得到）；`.pinned` 文件写方案名可固定，删掉恢复随机，`.current` 记当前方案。
+
+== hyprpm
+
+- 0.57 起插件状态在 `/var/cache/hyprpm/<用户>/`。**这目录必须归用户**，被 bootstrap 用 sudo 跑过一次就落 root 属主，之后 enable/update 全报错——`sudo chown -R $USER /var/cache/hyprpm` 根治（已做）。
+- `hyprpm purge-cache` 不能加 sudo 前缀（hyprpm 拒绝 root 运行），也不能在无 TTY 环境跑；正确姿势是用户在终端裸跑，它内部要提权时自己弹密码。
+- 插件仓库：https://github.com/VirtCode/hypr-dynamic-cursors[hypr-dynamic-cursors]（注意带 hypr- 前缀，去掉那个名字是 404）。Hyprland 升级后手动 `hyprpm update`。
+- 本机 git 有全局 insteadOf 把 github.com 重写为 SSH，克隆失败先怀疑仓库路径而不是网络。
+
+== 值得留意的废弃项
+
+0.57 起查废弃用 `hyprctl deprecated-config`。`dwindle/master:special_scale_factor` 已废且缩放逻辑整个没了，特殊工作区窗口改全尺寸；要缩小效果只能用 windowrule（float+size+center 匹配 special 工作区）。
+
+API 核对首选官方资源：https://wiki.hypr.land/configuring/core/ 和 https://github.com/hyprwm/Hyprland/blob/main/example/hyprland.lua[官方 Lua 示例]；本地 stub 在 `/usr/share/hypr/stubs/hl.meta.lua`。别一头扎进源码 grep，太大了。

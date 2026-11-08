@@ -1,0 +1,55 @@
+= 软件取舍
+
+装机和往 DEPS 加东西之前先看这页。原则：桌面服务 noctalia 一家提供，功能不重复；仓库里不留死软件痕迹。
+
+== 现役
+
+[cols="1,2"]
+|===
+|类目 |选择
+|合成器/外壳 |Hyprland（原生 Lua 配置）+ noctalia
+|终端 |alacritty-smooth-cursor-git
+|shell |fish（tide 提示符、catppuccin 主题、fisher 管插件）
+|编辑器 |Neovim —— NvChad 定制版（弃 LazyVim）；另有 helix/nv 配置在仓库
+|文件管理 |nautilus（SUPER+E）
+|输入法 |fcitx5 全家桶
+|通知/锁屏/Polkit/启动器 |noctalia 内置
+|资源监视 |Mission Center（Ctrl+Shift+Esc）
+|壁纸 |awww（swww 改名，官方 extra 仓库）+ wallust 取色
+|浏览器 |Firefox（prime-run 挂独显）
+|音频 |PipeWire 栈
+|字体 |Noto CJK + emoji
+|驱动 |nvidia-open-dkms
+|截图 |noctalia 内置（WIN+SHIFT+S）
+|夜间模式 |hyprsunset（MOD+N）
+|播放器 |VLC（软解修复入库）；mpv 可对照
+|本地 AI |ollama（用户服务）+ 本地 qwen（8080，另一套）
+|连点器 |tools/rightclick（Rust + evdev uinput，SUPER+L / SUPER+R 开关）
+|===
+
+== 弃用（别加回去）
+
+[cols="1,2,2"]
+|===
+|软件 |原因 |替代
+|rofi |启动器归 noctalia |noctalia launcher（Super+D）
+|waybar |状态栏归 noctalia |noctalia bar
+|swaync |通知归 noctalia |noctalia 通知（layer-shell，无窗口规则需求）
+|hyprlock |与 noctalia 内置锁屏双锁屏（实测） |`noctalia msg session lock`
+|hyprpolkitagent |noctalia 进程内有 Polkit 代理 |同上
+|btop / mpd |不需要，配置已清 |Mission Center / 网易云
+|kitty |光标生硬、字体全 Bold |alacritty
+|lf / yazi |终端文件管理器弃用；alacritty 无图形协议图片预览也残废 |nautilus（SUPER+E）
+|waydroid |已卸，残留 desktop 快捷方式清完 |Android AVD（~/Android，免 sudo）
+|wayvnc |不用远程桌面 |ToDesk
+|cosmic-* |整套装过又卸 |nautilus + GTK portal
+|gnome-system-monitor |有 Mission Center 了 |Mission Center
+|LazyVim |全面拥抱 NvChad |NvChad
+|openclaw |卸载干净（pnpm 路径断链教训） |—
+|virt-manager / libvirt |VM 测试放弃时卸栈（2026-10-25）；游戏 VFIO 2026-11-08 也未采用 |真要 VM 再议
+|===
+
+[NOTE]
+====
+ 弃用 = 弃用。哪天想恢复某个，先确认理由还成立，再问自己当初为什么删。
+====

@@ -1,0 +1,56 @@
+= 服务与网络
+
+== ollama（本地大模型）
+
+systemd **用户级**服务 `ollama.service`（单元文件在仓库路径但按约定不入库），跑在 `127.0.0.1:11434`。
+
+* `OLLAMA_KEEP_ALIVE=5m` 已在 `~/.config/systemd/user/ollama.service.d/override.conf` 配置：五分钟没调用自动从显存卸模型（约 4.7GB）。drop-in 不入库，裸机恢复要重建这一行。
+* 注意：客户端请求里显式传 `keep_alive=-1` 时会覆盖服务端默认，服务端拦不住。
+* fish 的 `ail`（本地 qwen）走 8080，是另一套服务，与 ollama 无关。
+
+改完单元要 `systemctl --user daemon-reload && systemctl --user restart ollama`。
+
+== daed（透明代理）
+
+dae/daed 栈：systemd 服务 `daed.service`（root，自定义 `daed-btf-fix` 构建），Web 面板 `http://localhost:2023`，配置在 root 私有的 `/etc/daed/`（agent 读不了，别试 sudo）。
+
+[NOTE]
+====
+"每次打开面板都要输密码"的坑：书签指向 `#/setup`——那是个不检查登录态的独立路由，永远显示向导。书签改成 `http://localhost:2023/#/` 就好。JWT 30 天有效，存 localStorage，重启不失效。
+====
+
+Firefox 的 localStorage 按源隔离：`localhost:2023`、`127.0.0.1:2023`、局域网 IP 各自独立 token。前端遇 GraphQL `access denied` 会清 token 踢回向导。要翻 token：profile 下的 `storage/default/http+++<host>+<port>/ls/data.sqlite`，拷出来用 sqlite3 读（key=`token`）。
+
+[WARNING]
+====
+TUN 模式开 strict_route 会丢掉一切非本机发起的转发流量——这台机器当网关/VM 宿主时对方全断不出网，症状是网关 ping 得通、公网全断、DNS 正常。解法：关 TUN 或关严格路由。
+====
+
+== 显示管理器（SDDM）
+
+SDDM 0.21 + girl-pillow 主题（system/sddm-girl-pillow）。默认 X11 greeter 模式下，登录界面用的那个 Xorg 在登录进 Hyprland 后不会退场，一直挂在 vt2 上（小负载）。
+
+切 Wayland greeter 的方案（要做时）：
+
+1. `sudo pacman -S --needed weston`
+2. 写 `/etc/sddm.conf.d/10-displayserver.conf`：
+
+[source,ini]
+----
+[General]
+DisplayServer=wayland
+----
+
+3. 重启验证。第三方主题与 Wayland greeter 偶有兼容问题，黑屏就 `Ctrl+Alt+F3` 进 tty 删掉那个文件重启。
+
+== 清理记录（别再装回来）
+
+[cols="1,2"]
+|===
+|软件 |结局与教训
+|openclaw |2026-11-08 彻底卸载（单元+pnpm 包+shim+673M 数据）。教训：pnpm 全局布局跨版本会从 `global/5/.pnpm/` 变成内容寻址 `global/v11/<hash>/`，单元文件硬编码包路径必断链
+|mpd |早已弃用，用户级+系统级服务已关。mpd.socket 还 active 的话 `sudo systemctl disable --now mpd.socket` 收尾
+|waydroid / wayvnc |整体弃用，配置/服务/仓库引用全清。远程桌面由 ToDesk 承担，安卓需求走 AVD
+|cosmic-* |整套装过又卸，文件管理统一 nautilus
+|btop / mpd 配置 |已从仓库和 ~/.config 删除
+|===

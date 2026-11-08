@@ -1,0 +1,25 @@
+= Sonder dotfiles · 知识库
+
+本目录放「为什么」——排障结论、踩坑记录、选型理由。怎么改配置看 README 的「架构与修改指南」；想懂来龙去脉看这里。
+
+格式是 AsciiDoc：`=` 一级标题、`==` 二级、`NOTE:/TIP:/WARNING:` 提示块、`----` 围代码。纯文本随便编辑，GitHub 直接渲染。
+
+== 篇目
+
+[cols="1,3"]
+|===
+|xref:xdg-desktop.adoc[] |.desktop 写法与覆盖——Exec 字段代码、prime-run 实例、仓库收纳流程
+|xref:machine.adoc[] |这台机器——双卡拓扑、混合显卡调度、GPU 排障命令、VLC/Firefox 坑、游戏 VM 评估存档
+|xref:hypr-lua.adoc[] |Hyprland Lua 配置——API 实测事实、dispatch 写法、动效方案库、hyprpm 坑
+|xref:noctalia.adoc[] |noctalia——内置服务、双层配置、插件系统、两个本地 fork
+|xref:desktop-env.adoc[] |桌面环境细节——fcitx5 双环境来源、portal、终端、音频
+|xref:services.adoc[] |服务与网络——ollama、daed、SDDM、清理记录
+|xref:software-choices.adoc[] |软件取舍——现役与弃用清单，装机前先看
+|xref:conventions.adoc[] |协作约定——脚本用 Rust、安装自己跑、注释规范、验证清单
+|===
+
+== 记东西的规矩
+
+* 写结论和原因，不写流水账。过程性叙述的价值只到结论落地那一刻。
+* 注明结论成立的前提（版本、时间），版本升级后回头核对。
+* 新主题一篇新文件，加进上面表格。

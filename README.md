@@ -122,6 +122,7 @@ tools/
 system/
   grub-catppuccin/    # GRUB Catppuccin Frappé 主题（sudo bash system/grub-catppuccin/install.sh 安装，--revert 回滚）
   noctalia-local-plugins/  # noctalia 本地插件 fork（速查面板 SUPER+/ 与状态栏歌词；修改/更新指南见其 README.md）
+docs/                 # 知识库（AsciiDoc）：排障结论、踩坑记录、选型理由；索引见 docs/index.adoc
 ```
 
 ## 重装系统后的还原步骤

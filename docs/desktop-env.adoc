@@ -1,0 +1,56 @@
+= 桌面环境细节
+
+== 中文输入法（fcitx5）
+
+fcitx5 全家桶（chinese-addons / rime / gtk / qt / configtool / nord）。
+
+[IMPORTANT]
+====
+环境变量有**两个来源，覆盖不同进程树，不是重复项**：
+
+* `~/.config/hypr/lua/environment.lua`（hl.env）→ 只对 Hyprland 拉起的 GUI 进程生效（浏览器等）
+* `~/.config/environment.d/im.conf` → 对 systemd / D-Bus 激活的服务生效（portal 等）
+
+为"统一"删掉任何一个，对应进程树就会打不出中文。
+====
+
+排查"某进程打不出中文"：先 dump `/proc/<pid>/environ` 看有没有 `GTK_IM_MODULE`。修 systemd 用户服务的环境改 `environment.d/im.conf`，然后 `systemctl --user restart xdg-desktop-portal-gtk.service`。GTK3 只认 `GTK_IM_MODULE`，不认 `XMODIFIERS`。
+
+== 文件弹窗（portal）
+
+文件选择/保存弹窗由 `xdg-desktop-portal-gtk` 渲染（portal-hyprland 只管截图/录屏/快捷键，没有 FileChooser）。统一用 GTK 弹窗，无需 `portals.conf` 额外配置。portal-gtk 是 GTK3 进程，中文输入问题照上一节修。
+
+== 目录与locale
+
+系统 locale 是 zh_CN，但目录名全英文（Documents/Downloads/...）：`.config/user-dirs.dirs` 已改指英文并入库。`user-dirs.locale` 保留 zh_CN 别动（改了会触发按语言重命名迁移）；真要彻底锁死可以加 `~/.config/user-dirs.conf`（enabled=false）。
+
+== 终端
+
+alacritty（`alacritty-smooth-cursor-git`），配置 `.config/alacritty/alacritty.toml`。
+
+* 换 kitty 的教训：光标生硬、字体全 Bold 难看，已卸载回滚。alacritty 有平滑光标（kitty 没有）。
+* **alacritty 没有任何图形协议**（Sixel/Kitty graphics 都没有），终端里看图只能 chafa 块状渲染。
+* TUI 程序从 Hyprland `exec` 派发没有 TTY 会立即退出，必须包一层终端：`alacritty <cmd>`（0.13+ 直接跟命令，无 -e）。
+* 终端文件管理器空缺（lf/yazi 都弃了），文件管理统一 nautilus（SUPER+E）。想装回先问。
+
+== 音频（PipeWire）
+
+Electron 应用（oopz 等）的 WebRTC 音频层在设备热拔/PipeWire 重启后经常卡死：流还在、没静音，但应用内部不渲染——重启应用才好，应用内切一下输出设备再切回来也行。
+
+外接 USB 音箱（Jieli，带麦）；3.5mm 走 ALC294。诊断命令：
+
+[source,bash]
+----
+wpctl status
+pactl list sink-inputs      # 看 Corked/Mute/routing
+pactl list sinks            # 看 Active Port
+journalctl --user -u pipewire -u wireplumber
+----
+
+全局没声：`systemctl --user restart pipewire wireplumber`。整条链同时重启（连 pipewire 主进程被 kill）优先怀疑 USB 集线器接触，不是 PipeWire 崩了。
+
+== 杂项
+
+* 截图绑定见 xref:noctalia.adoc[]；夜间模式 hyprsunset（MOD+N）。
+* 资源监视器 Mission Center（Ctrl+Shift+Esc），细节见 xref:machine.adoc[]。
+* MC 整合包「落幕曲」（1.20.1 Forge，HMCL，版本隔离）：查模组中文译名直接读 `~/.minecraft/versions/落幕曲/mods/<模组>.jar` 里的 `assets/*/lang/zh_cn.json`，别按通用叫法猜（RS 的 Importer 官方译名是"输入总线"）。

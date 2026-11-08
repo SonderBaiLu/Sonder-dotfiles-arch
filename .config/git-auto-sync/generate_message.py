@@ -14,13 +14,22 @@ OLLAMA_HOST = "127.0.0.1"
 OLLAMA_PORT = 11434
 OLLAMA_PATH = "/api/generate"
 MODEL = "qwen2.5:7b"
-PROMPT_TEMPLATE = """你是 git 提交信息生成助手。根据下面的改动写出**一条**中文提交信息。
+PROMPT_TEMPLATE = """你是 git 提交信息生成助手。根据下面的改动写出**一条**提交信息。
 
-要求：
-- 只输出提交信息本身，一行，不超过 50 个汉字
-- 说明实际改了什么（对象 + 动作），例如「更新 Hyprland 快捷键与 nvim 插件配置」
-- 需要时可用 conventional commit 前缀：feat/fix/refactor/docs/style/chore/perf
-- 不要引号、markdown、编号、解释或署名
+硬性要求（违反任何一条输出都会被程序丢弃）：
+- 以 conventional commit 前缀开头：feat: / fix: / docs: / refactor: / chore: / style: / perf:
+- 正文必须是中文
+- 只输出一行，不超过 50 个汉字
+- 说明实际改了什么（对象 + 动作）
+- 不要引号、markdown、编号、解释或署名，不要输出英文句子
+
+正确示例：
+feat: 修改快捷键描述与命令参数
+docs: 新增 docs 知识库并同步 README 目录
+
+错误示例（禁止）：
+docs: Add documentation for machine setup
+This document provides a detailed guide
 
 改动统计：
 {stat}
@@ -51,14 +60,28 @@ def build_prompt(rev: str | None = None) -> str:
     return PROMPT_TEMPLATE.format(stat=stat.strip(), patch=patch.strip())
 
 
+# conventional commit 前缀（feat:/fix(scope): 等）
+CONVENTIONAL_RE = re.compile(
+    r"^(feat|fix|refactor|docs|style|chore|perf|test|build|ci)(\([^)]*\))?:", re.I
+)
+
+
 def clean(text: str) -> str:
+    """清洗模型输出；不合格式返回空串，让调用方走中文 fallback。"""
     lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
     if not lines:
         return ""
     line = lines[0]
     line = re.sub(r"^(提交信息|commit message)[:：]\s*", "", line, flags=re.I)
     line = line.strip("`'\"“”‘’ -")
-    return line[:80]
+    if not line:
+        return ""
+    has_cjk = bool(re.search(r"[\u4e00-\u9fff]", line))
+    if CONVENTIONAL_RE.match(line):
+        # 前缀合格但正文纯英文（7B 模型偶发不守指令）→ 丢弃走 fallback
+        return line[:80] if has_cjk else ""
+    # 有中文但缺前缀 → 自动补 chore:；纯英文 → 丢弃
+    return f"chore: {line}"[:80] if has_cjk else ""
 
 
 def ollama_endpoint() -> str:

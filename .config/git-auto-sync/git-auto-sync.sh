@@ -45,7 +45,7 @@ fallback_message() {
     | sort | uniq -c | sort -rn | head -3 | awk '{print $2}' \
     | paste -sd '、' -)"
   [ -n "$areas" ] || areas="仓库配置"
-  printf '%s %s（%s 个文件）\n' "$verb" "$areas" "$total"
+  printf 'chore: %s %s（%s 个文件）\n' "$verb" "$areas" "$total"
 }
 
 # 本地领先上游时推送；没有上游或已同步则跳过

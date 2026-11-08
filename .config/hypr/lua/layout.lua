@@ -2,10 +2,10 @@
 -- 键名使用 Hyprland Lua 的层级表写法：冒号改为嵌套表，连字符改为下划线。
 
 hl.config({
-  -- Dwindle 是当前默认平铺布局；保持分割方向，特殊工作区窗口缩小到 80%。
+  -- Dwindle 是当前默认平铺布局；保持分割方向。
+  -- 0.57 起特殊工作区窗口不再整体缩小（special_scale_factor 已移除）。
   dwindle = {
     preserve_split = true,
-    special_scale_factor = 0.8,
   },
 
   -- Master 布局保留原有偏好，快捷键可在两种布局之间切换。

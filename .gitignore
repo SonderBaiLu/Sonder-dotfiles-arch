@@ -1,10 +1,18 @@
 # 本地覆盖
 *.local
+# 放行 XDG 用户目录 .local/（*.local 的 glob 会误伤目录名本身），
+# 其内容是否入库由下方 .local/share/* 规则链决定
+!.local/
 *.local.toml
 
 # 缓存
 .cache/
-.local/share/
+# .local/share 整体不入库（wine 扩展等运行时垃圾重灾区），
+# 仅白名单放行手工维护的 XDG 启动器覆盖项
+.local/share/*
+!.local/share/applications/
+.local/share/applications/*
+!.local/share/applications/firefox.desktop
 
 # 日志
 *.log

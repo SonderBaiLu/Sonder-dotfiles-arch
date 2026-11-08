@@ -432,3 +432,8 @@ git status                               # 确认没有把运行时垃圾带进�
 ```
 提交规范：中文 conventional commits（`feat:` / `fix:` / `chore:` / `docs:` / `refactor:`），一个主题一个提交；改完 README 相关小节要同步。
 
+### C.18 XDG 应用启动器覆盖（.local）
+- 位置：`.local/share/applications/`，**逐文件入库**，只放手工维护的覆盖项——即 `/usr/share/applications/` 某应用 desktop 的定制版。当前仅 `firefox.desktop`（四条 Exec 加 `prime-run`，把 Firefox 渲染丢给独显，核显只管桌面合成）。
+- 新增覆盖：从 `/usr/share/applications/<app>.desktop` 拷贝修改，移入仓库后在原位建相对符号链接（与 `.config` 风格一致）；`.gitignore` 对 `.local/share/*` 默认全排除、按白名单放行（模式见该文件注释），wine 生成的 `wine-*.desktop` 等运行时垃圾永不入库。
+- 包更新覆盖了上游 desktop 时：重新拷贝上游版并合并自己的改动（firefox 是给 Exec 加 prime-run 那几处），stow 链接不用动。
+

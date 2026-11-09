@@ -15,8 +15,7 @@ hl.on("hyprland.start", function()
 
 	-- Polkit 鉴权代理由 Noctalia 内置提供（无需 hyprpolkitagent）
 
-	-- 空闲管理守护进程（锁屏 / 休眠 / DPMS）
-	hl.exec_cmd("hypridle")
+	-- 空闲管理由 hypridle.service（systemd 用户单元）负责，避免 exec-once 重复启动
 
 	-- Noctalia 外壳（启动器 / 状态栏 / 控制中心）
 	hl.exec_cmd("noctalia")

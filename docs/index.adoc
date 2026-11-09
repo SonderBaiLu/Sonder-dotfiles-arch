@@ -14,6 +14,7 @@
 |xref:noctalia.adoc[] |noctalia——内置服务、双层配置、插件系统、两个本地 fork
 |xref:desktop-env.adoc[] |桌面环境细节——fcitx5 双环境来源、portal、终端、音频
 |xref:services.adoc[] |服务与网络——ollama、daed、SDDM、清理记录
+|xref:remote-desktop.adoc[] |远程控制——WireGuard 中转、Sunshine/Moonlight、VAAPI 编码、无人值守
 |xref:software-choices.adoc[] |软件取舍——现役与弃用清单，装机前先看
 |xref:conventions.adoc[] |协作约定——脚本用 Rust、安装自己跑、注释规范、验证清单
 |===

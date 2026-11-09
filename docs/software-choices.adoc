@@ -21,6 +21,7 @@
 |字体 |Noto CJK + emoji
 |驱动 |nvidia-open-dkms
 |截图 |noctalia 内置（WIN+SHIFT+S）
+|远程控制 |Sunshine + Moonlight（WireGuard 中转，见 xref:remote-desktop.adoc[]）
 |夜间模式 |hyprsunset（MOD+N）
 |播放器 |VLC（软解修复入库）；mpv 可对照
 |本地 AI |ollama（用户服务）+ 本地 qwen（8080，另一套）

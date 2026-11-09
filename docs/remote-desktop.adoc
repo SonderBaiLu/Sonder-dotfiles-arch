@@ -1,0 +1,167 @@
+= 远程控制（WireGuard + Sunshine/Moonlight）
+
+2026-11-09 搭建。目标：Windows 从公网无人值守控制本机（Arch + Hyprland）。
+
+选型结论：Sunshine 抓屏/编码/回注输入，Moonlight 做 Windows 客户端，阿里云 ECS 做 WireGuard 中转。Sunshine 端口不暴露公网，只开 WireGuard 的 UDP 51820。
+
+== 拓扑
+
+[source,text]
+----
+Windows 10.88.0.3
+  │  Moonlight / WireGuard UDP 51820
+  ▼
+阿里云 47.99.51.226
+  │  wireguard 容器，wg0 = 10.88.0.1，peer 间转发
+  ▼
+Arch 10.88.0.2
+  ├─ Sunshine：wlr-screencopy → VAAPI → RTP/UDP
+  ├─ uinput：键鼠回注
+  └─ Hyprland：eDP-1 2560×1440
+----
+
+== 组件
+
+[cols="1,2,3"]
+|===
+|位置 |组件 |作用
+|阿里云 |`wireguard` 容器（linuxserver/wireguard） |WireGuard 服务端与 peer 间转发；部署在 `/opt/wireguard`
+|本机 |`wg-quick@wg0` |客户端隧道，`/etc/wireguard/wg0.conf`，开机自启
+|本机 |`sunshine-bin` + `sunshine.service` |抓屏、编码、音频、uinput 输入、Web UI
+|Windows |WireGuard 隧道服务 `WireGuardTunnel$windows` |开机自动连 WG
+|Windows |Moonlight |解码、显示、发送键鼠
+|===
+
+=== 网络参数
+
+* WG 网段 `10.88.0.0/24`：阿里云 `10.88.0.1`，本机 `10.88.0.2`，Windows `10.88.0.3`。
+* 服务端每个 peer 的 `AllowedIPs` 是 `/32`；客户端 `AllowedIPs = 10.88.0.0/24`（split tunnel）。
+* 两端 `PersistentKeepalive = 25`。
+* 阿里云安全组只放行 `UDP 51820`；本机 firewalld 的 `trusted` 区信任 `10.88.0.0/24`。
+
+[NOTE]
+====
+Windows 和本机当前共用同一个公网出口，但流量仍经阿里云中转；WireGuard 不做 NAT 穿透。带宽和延迟取决于 ECS，卡就降 Moonlight 码率/分辨率。
+====
+
+== 端口
+
+[cols="1,2,2,3"]
+|===
+|端口 |协议 |方向 |用途
+|51820 |UDP |Windows/本机 → 阿里云 |WireGuard
+|47984 |TCP |客户端 → Sunshine |HTTPS 控制
+|47989 |TCP |客户端 → Sunshine |HTTP 控制
+|47990 |TCP |浏览器 → Sunshine |Web UI（配对/配置）
+|48010 |TCP |客户端 → Sunshine |RTSP
+|47998 |UDP |Sunshine → 客户端 |视频
+|47999 |UDP |双向 |控制
+|48000 |UDP |Sunshine → 客户端 |音频
+|48002 |UDP |客户端 → Sunshine |麦克风
+|===
+
+这些 Sunshine 端口不在安全组里，只通过 WG 可达；firewalld 的 trusted 源规则覆盖全部端口。
+
+== Sunshine 配置
+
+`~/.config/sunshine/sunshine.conf`：
+
+[source,ini]
+----
+capture = wlr
+encoder = vaapi
+adapter_name = /dev/dri/renderD128
+upnp = off
+origin_web_ui_allowed = lan
+----
+
+* `capture = wlr`：Hyprland 的 `wlr-screencopy`，抓 `eDP-1`（AMD 核显）。
+* `encoder = vaapi` + `adapter_name = /dev/dri/renderD128`：抓屏和编码都留在 AMD 核显（Radeon 610M）。NVIDIA 对应 `renderD129`。
+* 输入走 uinput：Sunshine 包自带 udev 规则，用户需在 `input` 组；Hyprland 把虚拟键鼠当真实设备。
+* 音频走 PipeWire，Sunshine 会切到 `sink-sunshine-stereo`。
+* Web UI 账号 `qicat`，密码在 Sunshine 凭据存储里；改密码用 `https://<host>:47990/password`。
+
+[WARNING]
+====
+`sunshine --creds` 会把 `sunshine.conf` 重写成默认值（`upnp = on`、丢 `origin_web_ui_allowed`）。改密码用 Web UI，不要用 CLI。
+====
+
+== 启动链与无人值守
+
+* 阿里云：`docker compose -f /opt/wireguard/docker-compose.yml up -d`，容器 `restart: unless-stopped`。
+* 本机：`wg-quick@wg0` enabled，开机建隧道；`sunshine.service` enabled，登录后随 `graphical-session.target` 启动（unit 里先 sleep 5 秒等桌面）。
+* Windows：WireGuard 用 `wireguard.exe /installtunnelservice` 装成服务，开机自启；Moonlight 通过启动项/计划任务在登录后自启（见下）。
+* `hypridle`：300 秒锁屏；600 秒仅在**无外部供电**时 suspend；900 秒 DPMS 关闭。插电时不睡，供远程。
+* 合盖：默认 suspend。要插电合盖继续跑（电池合盖仍睡），需：
++
+[source,bash]
+----
+sudo mkdir -p /etc/systemd/logind.conf.d
+printf '[Login]\nHandleLidSwitch=suspend\nHandleLidSwitchExternalPower=ignore\nHandleLidSwitchDocked=ignore\n' | sudo tee /etc/systemd/logind.conf.d/99-lid-ignore.conf >/dev/null
+sudo systemctl restart systemd-logind
+----
+* 断电重启：SDDM 默认无自动登录，重启后要有人在本机登录一次。要免人工：
++
+[source,bash]
+----
+sudo mkdir -p /etc/sddm.conf.d
+printf '[Autologin]\nUser=qicat\nSession=hyprland\nRelogin=false\n' | sudo tee /etc/sddm.conf.d/10-autologin.conf >/dev/null
+----
++
+[WARNING]
+====
+自动登录绕过开机密码；`Relogin=false` 只保证第一次开机自动进桌面，注销后回 SDDM。介意物理安全就别开。
+====
+* Windows 端 Moonlight 自启：`Win+R` → `shell:startup` 放快捷方式；或用任务计划程序，登录时延迟 30 秒启动，等隧道起来。
+
+== 排障
+
+=== RustDesk 为什么弃用
+
+Hyprland 的 `xdg-desktop-portal-hyprland` 没实现 `org.freedesktop.portal.RemoteDesktop`（本机 1.5.0 的 `.portal` 只有 Screenshot/ScreenCast/GlobalShortcuts/InputCapture）。RustDesk 在 Wayland 下拿不到 RemoteDesktop，键鼠注入和无人值守不可靠，报“桌面门户缺少屏幕共享或远程控制所需的功能”。中继容器已停，数据在 `/opt/rustdesk`。
+
+=== 没有视频画面 / 黑屏
+
+先看 `~/.config/sunshine/sunshine.log`：
+
+* `Couldn't import RGB Image: 00003004` + `Could not convert image`：抓屏在 AMD、编码在 NVIDIA，跨显卡 DMA-BUF 导入失败。解决：`encoder = vaapi` + `adapter_name = /dev/dri/renderD128`。
+* `Found H.264 encoder: h264_vaapi [vaapi]` 才说明编码器选对。
+* Moonlight 报 UDP 47998/48000：先看日志有没有上面的导入错误；没有的话查 firewalld 是否信任 `10.88.0.0/24`，再查阿里云安全组 UDP 51820。
+
+=== firewalld
+
+`wg0` 不在任何 zone 时会落到默认 `public`（只开 ssh/http/https），Sunshine 端口会被 REJECT。把 WG 网段加进 trusted：
+
+[source,bash]
+----
+sudo firewall-cmd --zone=trusted --add-source=10.88.0.0/24 --permanent
+sudo firewall-cmd --reload
+----
+
+=== 中文输入
+
+Moonlight 只传键码，Windows 输入法组合出的汉字过不来。中文用本机 fcitx5（Ctrl+Space），或需要时在 Moonlight 里粘贴。
+
+== 运维命令
+
+[source,bash]
+----
+# 阿里云
+docker compose -f /opt/wireguard/docker-compose.yml ps
+docker exec wireguard wg show          # 看 handshake / transfer
+docker logs --tail 20 wireguard
+
+# 本机
+systemctl status wg-quick@wg0
+systemctl --user status sunshine.service
+tail -f ~/.config/sunshine/sunshine.log
+
+# Windows（PowerShell）
+Get-Service -Name 'WireGuardTunnel$windows'
+----
+
+== 相关
+
+* xref:machine.adoc[]：双卡拓扑与 GPU 排障。
+* xref:services.adoc[]：网络与服务。
+* xref:software-choices.adoc[]：现役/弃用清单。

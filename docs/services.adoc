@@ -50,7 +50,7 @@ DisplayServer=wayland
 |软件 |结局与教训
 |openclaw |2026-11-08 彻底卸载（单元+pnpm 包+shim+673M 数据）。教训：pnpm 全局布局跨版本会从 `global/5/.pnpm/` 变成内容寻址 `global/v11/<hash>/`，单元文件硬编码包路径必断链
 |mpd |早已弃用，用户级+系统级服务已关。mpd.socket 还 active 的话 `sudo systemctl disable --now mpd.socket` 收尾
-|waydroid / wayvnc |整体弃用，配置/服务/仓库引用全清。远程桌面由 ToDesk 承担，安卓需求走 AVD
+|waydroid / wayvnc |整体弃用，配置/服务/仓库引用全清。远程桌面见 xref:remote-desktop.adoc[]，安卓需求走 AVD
 |cosmic-* |整套装过又卸，文件管理统一 nautilus
 |btop / mpd 配置 |已从仓库和 ~/.config 删除
 |===

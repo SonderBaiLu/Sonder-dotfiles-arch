@@ -19,6 +19,8 @@ hl.on("hyprland.start", function()
 
 	-- Noctalia 外壳（启动器 / 状态栏 / 控制中心）
 	hl.exec_cmd("noctalia")
+	-- 代理客户端 FlClash（TUN 接管全局流量）；放在托盘宿主之后，且自身"静默启动"已开启
+	hl.exec_cmd("flclash")
 	-- Fcitx5
 	hl.exec_cmd("fcitx5")
 	-- 剪贴板历史（cliphist），分别监听文本与图片

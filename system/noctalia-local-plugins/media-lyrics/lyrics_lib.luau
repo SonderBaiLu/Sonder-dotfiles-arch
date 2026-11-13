@@ -215,6 +215,198 @@ function lib.lrcIsSynced(text)
   return text:match("%[%d+:%d+%.?%d*%]") ~= nil
 end
 
+-- ── 网页播放器标题清洗（Bilibili / YouTube 视频页）──────────────────────────
+--
+-- 这两类页面的 MPRIS 标题是**视频名**而非歌名，典型形态：
+--   【原神五神】“我期待的不是雪，而是盛世的流年”-UP主-音乐-哔哩哔哩视频
+--   【MV】歌名 - 歌手 - YouTube
+-- 原样拿去 LRCLIB 查必然落空（B 站页面连 xesam:artist 都是空的，而
+-- /api/get 要求 artist_name 非空，直接 400），所以先剥站点后缀、前缀角标、
+-- 包裹引号，再按标点取第一分句作为更宽泛的回退歌名。
+
+local VIDEO_SITES = { "哔哩哔哩", "bilibili", "youtube", "niconico", "抖音", "douyin" }
+
+local function isVideoTitle(title)
+  local l = trim(title):lower()
+  if l == "" then return false end
+  for _, p in ipairs(VIDEO_SITES) do
+    if l:find(p, 1, true) then return true end
+  end
+  return false
+end
+
+-- en dash / em dash（U+2013 / U+2014）按字节替换成 ASCII 连字符：
+-- Lua 字符类按字节工作，多字节字符放进 [...] 会拆坏 UTF-8。
+local function normalizeDashes(s)
+  return (s:gsub("\226\128\147", "-"):gsub("\226\128\148", "-"))
+end
+
+-- 站点后缀：B 站音乐稿固定是 `-UP主-音乐-哔哩哔哩视频`，先削站点段再削 UP 主；
+-- 只对已判定为视频标题的字符串调用，普通歌名的 ` - 歌手` 不会走到这里。
+local function stripSiteSuffix(s, site)
+  local t = trim(s)
+  if site == "bilibili" then
+    t = t:gsub("[%s]*%-[%s]*音乐[%s]*%-[%s]*哔哩哔哩视频$", "")
+    t = t:gsub("[%s]*%-[%s]*哔哩哔哩视频$", "")
+    t = t:gsub("[%s]*%-[%s]*哔哩哔哩$", "")
+    t = t:gsub("[%s]*%-[^-]*$", "") -- 末尾 UP 主名，只削一段
+  elseif site == "youtube" then
+    t = t:gsub("[%s]*%-[%s]*YouTube$", "")
+    t = t:gsub("[%s]*%-[%s]*Topic$", "")
+  end
+  return trim(t)
+end
+
+-- 前缀角标：【…】/[…] 可能叠好几层，循环剥到没有为止。
+local function stripLeadingBrackets(s)
+  local out = trim(s)
+  local changed = true
+  while changed do
+    changed = false
+    local t = out:gsub("^【[^】]*】%s*", "")
+    if t ~= out then out = t; changed = true end
+    t = out:gsub("^%[[^%]]*%]%s*", "")
+    if t ~= out then out = t; changed = true end
+  end
+  return trim(out)
+end
+
+-- 包裹引号：弯引号/直角引号/书名号各成对，ASCII 引号单独处理。
+local QUOTE_PAIRS = {
+  { "“", "”" }, { "‘", "’" }, { "「", "」" }, { "『", "』" }, { "《", "》" },
+}
+
+local function stripWrapperQuotes(s)
+  local t = trim(s)
+  local changed = true
+  while changed do
+    changed = false
+    for _, pair in ipairs(QUOTE_PAIRS) do
+      local o, c = pair[1], pair[2]
+      if #t > #o + #c and t:sub(1, #o) == o and t:sub(-#c) == c then
+        t = trim(t:sub(#o + 1, -#c - 1))
+        changed = true
+      end
+    end
+    if #t > 2 and t:sub(1, 1) == '"' and t:sub(-1) == '"' then
+      t = trim(t:sub(2, -2)); changed = true
+    end
+    if #t > 2 and t:sub(1, 1) == "'" and t:sub(-1) == "'" then
+      t = trim(t:sub(2, -2)); changed = true
+    end
+  end
+  return t
+end
+
+-- 去掉末尾的全角括注（“歌名（Live）”），只吃成对的全角括号。
+local function stripTrailingWideParen(s)
+  local t = trim(s)
+  if t:sub(-#"）") ~= "）" then return t end
+  local openAt = nil
+  local i = 1
+  while true do
+    local p = t:find("（", i, true)
+    if not p then break end
+    openAt = p
+    i = p + #"（"
+  end
+  if openAt then return trim(t:sub(1, openAt - 1)) end
+  return t
+end
+
+-- 第一个分句（逗号/顿号/分号/竖线切分），至少两个汉字（6 字节）才算数。
+local CLAUSE_SEPS = { "，", ",", "、", "；", ";", "|", "｜" }
+
+local function firstClause(s)
+  local cut = nil
+  for _, sep in ipairs(CLAUSE_SEPS) do
+    local p = s:find(sep, 1, true)
+    if p and (cut == nil or p < cut) then cut = p end
+  end
+  if not cut then return nil end
+  local head = trim(s:sub(1, cut - 1))
+  if #head < 6 then return nil end
+  return head
+end
+
+-- 视频标题 → 歌名候选，按“具体 → 宽泛”排序。不是视频标题时返回空表。
+function lib.videoTitleVariants(title)
+  local raw = trim(title)
+  if raw == "" or not isVideoTitle(raw) then return {} end
+
+  local l = raw:lower()
+  local site = ""
+  if l:find("哔哩哔哩", 1, true) or l:find("bilibili", 1, true) then
+    site = "bilibili"
+  elseif l:find("youtube", 1, true) then
+    site = "youtube"
+  end
+
+  local t = stripSiteSuffix(normalizeDashes(raw), site)
+  t = stripWrapperQuotes(stripLeadingBrackets(t))
+  t = trim((t:gsub("[%s|｜]+$", ""):gsub("%-+$", "")))
+
+  local out, seen = {}, {}
+  local function push(v)
+    v = trim(v or "")
+    if #v >= 3 and v ~= raw and not seen[v] then
+      seen[v] = true
+      out[#out + 1] = v
+    end
+  end
+
+  push(t)
+  push(firstClause(t))
+  local noParen = stripTrailingWideParen(t)
+  if noParen ~= t then
+    push(noParen)
+    push(firstClause(noParen))
+  end
+  return out
+end
+
+-- 从 LRCLIB /api/search 的结果里挑一条可信的同步歌词：
+-- 歌名必须互相包含，时长已知时要求相差 ≤8s（录音对不上就不认，避免串歌）。
+-- 返回得分最高的候选，没有可信项返回 nil。
+local function normName(s)
+  return (trim(s):lower():gsub("%s+", ""))
+end
+
+function lib.pickSearchCandidate(cands, wantTitle, durSec)
+  local want = normName(wantTitle)
+  if want == "" then return nil end
+  local d = tonumber(durSec)
+  local best, bestScore = nil, 0
+  for _, c in ipairs(cands or {}) do
+    if type(c) == "table" and trim(c.syncedLyrics or "") ~= "" then
+      local name = normName(c.trackName or "")
+      if name ~= "" then
+        local score = 0
+        if name == want then
+          score = 8
+        elseif name:find(want, 1, true) or want:find(name, 1, true) then
+          score = 4
+        end
+        if score > 0 then
+          local cd = tonumber(c.duration)
+          if d and d > 0 and cd then
+            local diff = math.abs(cd - d)
+            if diff <= 2 then
+              score = score + 4
+            elseif diff <= 8 then
+              score = score + 1
+            else
+              score = 0
+            end
+          end
+          if score > bestScore then best, bestScore = c, score end
+        end
+      end
+    end
+  end
+  return best
+end
+
 -- ── sanitizers ─────────────────────────────────────────────────────────────
 
 function lib.sanitizePart(s)

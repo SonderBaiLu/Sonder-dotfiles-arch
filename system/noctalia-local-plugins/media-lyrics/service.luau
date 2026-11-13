@@ -312,6 +312,11 @@ local function loadLyricsForTrack(artist, title, album, durationSec, key, embedd
   -- timestamps line up. Lives in lyrics_lib.luau (unit-tested).
   local rankNetEaseSongs = lyrics_lib.rankNetEaseSongs
 
+  -- 网页播放器（Bilibili/YouTube）的标题是视频名；清洗成歌名变体、
+  -- 以及从 LRCLIB 结果里挑可信候选，两段纯逻辑都在 lyrics_lib.luau。
+  local videoTitleVariants = lyrics_lib.videoTitleVariants
+  local pickSearchCandidate = lyrics_lib.pickSearchCandidate
+
   local function lrcIsSynced(text)
     return lyrics_lib.lrcIsSynced(text)
   end

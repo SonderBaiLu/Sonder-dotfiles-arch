@@ -3,6 +3,6 @@ Description=Backup TheFoo Minecraft world (btrfs reflink)
 
 [Service]
 Type=oneshot
-ExecStart=/home/qicat/Documents/MCServer/TheFoo/backup-world.sh
+ExecStart=/home/qicat/Documents/Minecraft/Server/TheFoo/backup-world.sh
 Nice=19
 IOSchedulingClass=idle

@@ -23,6 +23,8 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("flclash")
 	-- Fcitx5
 	hl.exec_cmd("fcitx5")
+	-- 密钥环（Secret Service）：ZCode 等 Electron 应用登录/存凭据依赖它
+	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
 	-- 剪贴板历史（cliphist），分别监听文本与图片
 	hl.exec_cmd("wl-paste --type text --watch cliphist store")
 	hl.exec_cmd("wl-paste --type image --watch cliphist store")

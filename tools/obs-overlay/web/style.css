@@ -85,6 +85,11 @@ body.preview {
   top: 0;
 }
 
+/* 面板自身声明了 display，必须提高优先级才能真隐藏 */
+[hidden] {
+  display: none !important;
+}
+
 /* ---------- 通用面板 ---------- */
 
 .panel {
@@ -534,6 +539,8 @@ body.preview .game-placeholder { display: flex; }
 
 /* ---------- 小人位 ---------- */
 
+/* 完全透明的预留区域：VTuber 由自己在 OBS 里捕获后摆在这里。
+   默认只画四个角落的像素角标，不画边框、不写字，避免挡住人物。 */
 .avatar-slot {
   z-index: 2;
   pointer-events: none;
@@ -542,55 +549,73 @@ body.preview .game-placeholder { display: flex; }
 .avatar-frame {
   position: absolute;
   inset: 0;
-  border: 2px dashed transparent;
   opacity: 0;
-  transition: opacity .15s;
 }
+
+.avatar-decor {
+  position: absolute;
+  inset: 0;
+  opacity: .5;
+}
+
+.avatar-decor i {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border: 3px solid rgba(192, 139, 255, .75);
+  filter: drop-shadow(0 0 6px rgba(192, 139, 255, .35));
+}
+
+.avatar-decor i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; }
+.avatar-decor i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; }
+.avatar-decor i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; }
+.avatar-decor i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; }
 
 .avatar-label {
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  bottom: 10px;
+  transform: translateX(-50%);
   display: none;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 10px 18px;
-  color: rgba(200, 165, 255, .8);
-  border: 1px solid rgba(192, 139, 255, .35);
-  background: rgba(8, 6, 16, .42);
+  padding: 8px 16px;
+  color: rgba(214, 186, 255, .9);
+  border: 1px solid rgba(192, 139, 255, .4);
+  background: rgba(10, 7, 18, .72);
   white-space: nowrap;
 }
 
 .avatar-label small {
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 4px;
-  color: rgba(160, 140, 200, .55);
+  color: rgba(170, 150, 210, .7);
 }
 
-/* 预览模式给小人位一点可见提示 */
-body.preview .avatar-slot .avatar-frame {
-  opacity: .35;
-  border-color: rgba(192, 139, 255, .5);
+/* 预览 / 对位模式才显示虚线框和文字 */
+body.preview .avatar-slot .avatar-frame,
+body.guide .avatar-slot .avatar-frame {
+  opacity: 1;
+  border: 2px dashed rgba(192, 139, 255, .55);
   background: rgba(120, 90, 200, .05);
 }
 
-body.preview .avatar-slot .avatar-label { display: flex; }
-
-/* 对位模式：显示游戏洞和小人位的边框 + 尺寸 */
-body.guide .game-hole {
-  outline: 3px dashed rgba(111, 231, 255, .85);
-  outline-offset: -8px;
-}
-
 body.guide .avatar-slot .avatar-frame {
-  opacity: 1;
   border-color: rgba(192, 139, 255, .9);
   background: rgba(120, 90, 200, .08);
 }
 
-body.guide .avatar-slot .avatar-label { display: flex; }
+body.preview .avatar-slot .avatar-label,
+body.guide .avatar-slot .avatar-label {
+  display: flex;
+}
+
+/* 对位模式：显示游戏洞的虚线边界 */
+body.guide .game-hole {
+  outline: 3px dashed rgba(111, 231, 255, .85);
+  outline-offset: -8px;
+}
 
 .guide-tag {
   position: absolute;

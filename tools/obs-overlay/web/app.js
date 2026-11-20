@@ -6,6 +6,7 @@
   const isFile = location.protocol === "file:";
   const demo = params.has("demo") ? params.get("demo") !== "0" : Boolean(CFG.demo) || isFile;
   const preview = params.has("preview") ? params.get("preview") !== "0" : isFile;
+  const guide = params.has("guide") ? params.get("guide") !== "0" : Boolean(CFG.guide);
 
   const $ = (id) => document.getElementById(id);
   const stage = $("stage");
@@ -14,6 +15,11 @@
   const hotbarSlots = $("hotbar-slots");
   const hearts = $("hearts");
   const hunger = $("hunger");
+
+  const regions = {};
+  document.querySelectorAll("[data-region]").forEach((el) => {
+    regions[el.dataset.region] = el;
+  });
 
   const USER_COLORS = [
     "#9fd4ff", "#ffd166", "#8fffb0", "#ff9fb2",
@@ -78,10 +84,10 @@
     { icon: "totem", name: "不死图腾", count: 1, source: "来自 林地府邸" }
   ];
 
+  let layoutName = params.get("layout") || CFG.defaultLayout || "classic";
+  let currentLayout = null;
   let selectedSlot = 0;
   let hotbarItems = Array.isArray(CFG.hotbar) ? CFG.hotbar : [];
-  let worldTimeKnown = false;
-  let realData = false;
   let live = false;
   let uptimeSeconds = 0;
   let online = 0;
@@ -91,7 +97,70 @@
   let demoTimer = null;
   let demoStep = 0;
 
-  /* ---------------- 布局 ---------------- */
+  /* ---------------- 版式 ---------------- */
+
+  function applyLayout(name) {
+    const layouts = CFG.layouts || {};
+    const names = Object.keys(layouts);
+    if (names.length === 0) return;
+    layoutName = layouts[name] ? name : layouts[CFG.defaultLayout] ? CFG.defaultLayout : names[0];
+    currentLayout = layouts[layoutName];
+    document.body.dataset.layout = layoutName;
+
+    Object.entries(regions).forEach(([key, el]) => {
+      const rect = currentLayout[key];
+      if (!rect || rect.hidden) {
+        el.hidden = true;
+        return;
+      }
+      el.hidden = false;
+      el.style.left = `${rect.x}px`;
+      el.style.top = `${rect.y}px`;
+      el.style.width = `${rect.w}px`;
+      el.style.height = `${rect.h}px`;
+    });
+
+    const top = currentLayout.top;
+    if (top && regions.top) {
+      const scale = Math.max(0.62, Math.min(1.2, top.h / 124));
+      regions.top.style.setProperty("--s", scale.toFixed(3));
+    }
+
+    const chat = currentLayout.chat;
+    document.body.style.setProperty("--chat-font", chat && chat.w < 340 ? "16px" : "20px");
+
+    fitHotbar();
+    updateGuideLabels();
+  }
+
+  // 按物品栏区域的实际宽高算出格子边长，避免不同版式里溢出。
+  function fitHotbar() {
+    const rect = currentLayout && currentLayout.hotbar;
+    if (!rect) return;
+    const gap = 18;
+    const padX = 40;
+    const barsH = 40;
+    const heldH = 32;
+    const gapY = 10;
+    const availW = rect.w - padX;
+    const availH = rect.h - 22 - barsH - heldH - gapY;
+    const size = Math.min(availH, (availW - gap * 8) / 9);
+    stage.style.setProperty("--slot", `${Math.max(52, Math.floor(size))}px`);
+  }
+
+  function updateGuideLabels() {
+    if (!currentLayout) return;
+    const gameTag = document.querySelector('[data-guide="game"]');
+    if (gameTag && currentLayout.game) {
+      const g = currentLayout.game;
+      gameTag.textContent = `游戏画面 · ${g.w}×${g.h} · 位置 ${g.x},${g.y}`;
+    }
+    const avatarLabel = document.querySelector(".avatar-label span");
+    if (avatarLabel && currentLayout.avatar) {
+      const a = currentLayout.avatar;
+      avatarLabel.textContent = `虚拟人物 ${a.w}×${a.h}`;
+    }
+  }
 
   function fitStage() {
     const scale = Math.min(window.innerWidth / 2560, window.innerHeight / 1440);
@@ -130,11 +199,17 @@
   /* ---------------- 顶部栏 ---------------- */
 
   function applyConfig() {
-    $("brand-kicker").textContent = CFG.kicker || "MINECRAFT · 1.20.1";
-    $("brand-title").textContent = CFG.title || "THE FOOL";
-    $("brand-sub").textContent = CFG.subtitle || "落幕曲 · 日常随机";
-    $("nowplaying").textContent = CFG.bgm || "C418 - Sweden";
+    $("brand-kicker").textContent = CFG.kicker || "";
+    $("brand-title").textContent = CFG.title || "";
+    $("brand-sub").textContent = CFG.subtitle || "";
+    $("nowplaying").textContent = CFG.bgm || "";
     setRoomId(CFG.roomId);
+
+    const stats = CFG.stats || {};
+    if (stats.coords) $("stat-coords").textContent = stats.coords;
+    if (stats.dimension) $("stat-dimension").textContent = stats.dimension;
+    if (stats.dayNight) $("stat-clock").textContent = stats.dayNight;
+    if (stats.diamonds) $("stat-diamonds").textContent = stats.diamonds;
   }
 
   function updateClock() {
@@ -144,9 +219,6 @@
     const ss = String(now.getSeconds()).padStart(2, "0");
     $("clock").textContent = `${hh}:${mm}:${ss}`;
     $("chat-time").textContent = `${hh}:${mm}`;
-    if (!worldTimeKnown) {
-      $("stat-clock").textContent = now.getHours() >= 18 || now.getHours() < 6 ? "夜晚" : "白天";
-    }
   }
 
   function updateUptime() {
@@ -195,25 +267,6 @@
     if (typeof data.online === "number") online = data.online;
     if (typeof data.watched === "number") watched = data.watched;
     if (typeof data.uptime === "number") uptimeSeconds = data.uptime;
-    if (
-      typeof data.x === "number" &&
-      typeof data.y === "number" &&
-      typeof data.z === "number"
-    ) {
-      $("stat-coords").textContent = `${data.x} / ${data.y} / ${data.z}`;
-    }
-    if (typeof data.biome === "string" && data.biome) {
-      $("stat-biome").textContent = data.biome;
-    }
-    if (typeof data.day === "boolean") {
-      worldTimeKnown = true;
-      $("stat-clock").textContent = data.day ? "白天" : "夜晚";
-    }
-    if (!realData && typeof data.x === "number") {
-      // 收到第一份真实坐标后，清掉最近获得的示例数据，避免真假混在一起。
-      realData = true;
-      renderRecent([]);
-    }
     updateUptime();
   }
 
@@ -237,7 +290,7 @@
       hotbarSlots.appendChild(slot);
     });
     const index = Number.isInteger(selected) ? selected : 0;
-    selectSlot(Math.max(0, Math.min(8, index)));
+    selectSlot(Math.max(0, Math.min(hotbarItems.length - 1, index)));
   }
 
   function selectSlot(index) {
@@ -246,11 +299,6 @@
     items.forEach((slot, i) => slot.classList.toggle("selected", i === index));
     const item = hotbarItems[index];
     $("held-name").textContent = item && item.name ? item.name : "空手";
-  }
-
-  function updateHotbar(data) {
-    if (!Array.isArray(data.items)) return;
-    renderHotbar(data.items, Number.isInteger(data.selected) ? data.selected : selectedSlot);
   }
 
   function renderBars() {
@@ -300,10 +348,9 @@
 
   function renderRecent(items) {
     clearNode(recentList);
-    (items || []).slice(0, 5).forEach((item) => {
+    (items || []).slice(0, 6).forEach((item) => {
       recentList.appendChild(recentRow(item, false));
     });
-    // 初次加载只闪一下“新获得”，避免第一行永久高亮。
     const first = recentList.firstElementChild;
     if (first) {
       first.classList.add("new");
@@ -315,7 +362,7 @@
     if (!item || !item.name) return;
     const row = recentRow(item, true);
     recentList.prepend(row);
-    while (recentList.children.length > 5) {
+    while (recentList.children.length > 6) {
       recentList.removeChild(recentList.lastChild);
     }
     window.setTimeout(() => row.classList.remove("new"), 2200);
@@ -469,6 +516,19 @@
     demoTimer = window.setTimeout(demoChat, 1400 + Math.random() * 2200);
   }
 
+  function seedDemoChat() {
+    addChat({ user: "只熊KUMA", text: "来了来了，今天挖什么", medal: "落幕曲" });
+    addChat({ user: "海式politcum", text: "这个光影看着好舒服", guard: 3, medal: "落幕曲" });
+    addEnter({ user: "新观众" });
+    addGift({ user: "Brick Astley", gift: "小心心", num: 10 });
+    addChat({ user: "钻石矿工", text: "主播坐标发一下，我去送点东西" });
+    addSuperchat({ user: "Brick Astley", text: "这个整合包叫什么？想和朋友一起玩", price: 30 });
+    addChat({ user: "末影人", text: "前方高能，注意苦力怕" });
+    addChat({ user: "红石工程师", text: "这个红石电路能分享一下吗" });
+    addGuard({ user: "Brick Astley", gift: "舰长" });
+    addChat({ user: "苦力怕不苦", text: "这个建筑是自己搭的吗" });
+  }
+
   function startDemo() {
     uptimeSeconds = 2 * 3600 + 14 * 60 + 36;
     online = 1234;
@@ -487,19 +547,6 @@
     }, 28000);
 
     window.setInterval(demoRecent, 9000);
-  }
-
-  function seedDemoChat() {
-    addChat({ user: "只熊KUMA", text: "来了来了，今天挖什么", medal: "落幕曲" });
-    addChat({ user: "海式politcum", text: "这个光影看着好舒服", guard: 3, medal: "落幕曲" });
-    addEnter({ user: "新观众" });
-    addGift({ user: "Brick Astley", gift: "小心心", num: 10 });
-    addChat({ user: "钻石矿工", text: "主播坐标发一下，我去送点东西" });
-    addSuperchat({ user: "Brick Astley", text: "这个整合包叫什么？想和朋友一起玩", price: 30 });
-    addChat({ user: "末影人", text: "前方高能，注意苦力怕" });
-    addChat({ user: "红石工程师", text: "这个红石电路能分享一下吗" });
-    addGuard({ user: "Brick Astley", gift: "舰长" });
-    addChat({ user: "苦力怕不苦", text: "这个建筑是自己搭的吗" });
   }
 
   /* ---------------- 真实弹幕 ---------------- */
@@ -552,7 +599,9 @@
         addRecent(event);
         break;
       case "hotbar":
-        updateHotbar(event);
+        if (Array.isArray(event.items)) {
+          renderHotbar(event.items, Number.isInteger(event.selected) ? event.selected : selectedSlot);
+        }
         break;
       case "room":
         setRoomId(event.room_id);
@@ -589,7 +638,7 @@
       try {
         handleEvent(JSON.parse(ev.data));
       } catch (err) {
-        // 忽略无法解析的消息，避免一条坏数据打断整个弹幕流。
+        // 单条坏数据不应该打断整个弹幕流。
       }
     });
 
@@ -616,7 +665,9 @@
 
   function start() {
     document.body.classList.toggle("preview", preview);
+    document.body.classList.toggle("guide", guide);
     applyConfig();
+    applyLayout(layoutName);
     window.paintIcons();
     renderHotbar();
     renderBars();
@@ -624,22 +675,19 @@
     updateClock();
     updateUptime();
     fitStage();
-    window.addEventListener("resize", fitStage);
+
+    window.addEventListener("resize", () => {
+      fitStage();
+      fitHotbar();
+    });
 
     window.setInterval(updateClock, 1000);
     window.setInterval(() => {
-      if (live) {
-        uptimeSeconds += 1;
-        if (demo && Math.random() < 0.06) online += Math.floor(Math.random() * 6) - 2;
-        updateUptime();
-      }
+      if (!live) return;
+      uptimeSeconds += 1;
+      if (demo && Math.random() < 0.06) online += Math.floor(Math.random() * 6) - 2;
+      updateUptime();
     }, 1000);
-
-    window.setInterval(() => {
-      if (!demo) return;
-      if (hotbarItems.length === 0) return;
-      selectSlot((selectedSlot + 1) % hotbarItems.length);
-    }, 4200);
 
     if (demo) {
       startDemo();

@@ -270,9 +270,15 @@
 
   function renderRecent(items) {
     clearNode(recentList);
-    (items || []).slice(0, 5).forEach((item, index) => {
-      recentList.appendChild(recentRow(item, index === 0));
+    (items || []).slice(0, 5).forEach((item) => {
+      recentList.appendChild(recentRow(item, false));
     });
+    // 初次加载只闪一下“新获得”，避免第一行永久高亮。
+    const first = recentList.firstElementChild;
+    if (first) {
+      first.classList.add("new");
+      window.setTimeout(() => first.classList.remove("new"), 2200);
+    }
   }
 
   function addRecent(item) {

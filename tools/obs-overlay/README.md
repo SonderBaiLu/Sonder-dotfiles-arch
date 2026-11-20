@@ -90,7 +90,7 @@ journalctl --user -u obs-overlay-bridge.service -f
 
 - OBS 输出：`2560×1440`，`90 FPS`，基础/输出分辨率一致，不要缩到 1080p。
 - 编码器：**NVIDIA NVENC HEVC**，Rate Control **CQP**，CQ **20**，Preset **P5**，Multipass **qres**，Look-ahead **关**，B-frames **2**，Adaptive Quantization **开**。
-- 分段：按大小 **8 GB**。实际码率大约 30–80 Mbps，8 GB 约 14–36 分钟一段；234 GB 可用空间大约能录 6–13 小时。
+- 分段：按大小 **8 GB**。实际码率大约 30–80 Mbps，8 GB 约 14–36 分钟一段；234 GB 可用空间按这个码率大约能录 6.5–17 小时。
 - OBS 必须用 **4070** 启动：桌面入口已经设置 `__EGL_VENDOR_LIBRARY_FILENAMES` 指向 NVIDIA EGL；从 Noctalia 的 OBS Control 按钮启动也已加同样环境变量。否则 OBS 会回到 610M 核显，NVENC 走非纹理回退，1440p90 会明显卡。
 - Noctalia 的 `obs-control` 是社区插件；更新插件可能覆盖本地补丁（强制 NVIDIA EGL、容忍 replay/virtualcam 未启用）。如果状态栏启动 OBS 又回到核显，把这三行环境变量补回 `launch()` 即可。
 - Minecraft 侧：`maxFps:90`、`enableVsync:false`。160Hz 屏上 100fps + VSync 会产生 1.6 倍刷新节奏，录制出来会一顿一顿。

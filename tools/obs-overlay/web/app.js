@@ -80,9 +80,9 @@
 
   let selectedSlot = 0;
   let live = false;
-  let uptimeSeconds = 2 * 3600 + 14 * 60 + 36;
-  let online = 1234;
-  let watched = 5678;
+  let uptimeSeconds = 0;
+  let online = 0;
+  let watched = 0;
   let ws = null;
   let reconnectTimer = null;
   let demoTimer = null;
@@ -151,14 +151,11 @@
     $("stat-watched").textContent = formatNumber(watched);
   }
 
-  function setLive(value, title) {
+  function setLive(value) {
     live = Boolean(value);
     const badge = $("live-badge");
     badge.classList.toggle("on", live);
     $("live-label").textContent = live ? "LIVE" : "OFFLINE";
-    if (title) {
-      $("brand-sub").textContent = title;
-    }
     if (!live) {
       $("chat-status").textContent = "主播未开播";
     } else if ($("chat-status").textContent === "主播未开播") {
@@ -349,7 +346,7 @@
     const row = document.createElement("div");
     row.className = "msg enter";
     row.appendChild(makeUser(data.user || "新观众"));
-    row.appendChild(makeText(" 进入了直播间"));
+    row.appendChild(makeText(` ${data.text || "进入了直播间"}`));
     pushChat(row);
   }
 
@@ -429,10 +426,13 @@
   }
 
   function startDemo() {
+    uptimeSeconds = 2 * 3600 + 14 * 60 + 36;
+    online = 1234;
+    watched = 5678;
     setConnection(false, "DEMO");
     setChatStatus("演示数据");
-    setLive(true, null);
-    setStats({ online: 1234, watched: 5678, uptime: uptimeSeconds });
+    setLive(true);
+    updateUptime();
     seedDemoChat();
     demoChat();
 
@@ -476,11 +476,12 @@
     switch (event.type) {
       case "status":
         setConnection(Boolean(event.connected), event.connected ? "已连接" : "未连接");
+        setStats(event);
         if (event.room_id) $("live-room").textContent = `ROOM ${event.room_id}`;
-        if (typeof event.live === "boolean") setLive(event.live, event.title);
+        if (typeof event.live === "boolean") setLive(event.live);
         break;
       case "live":
-        setLive(Boolean(event.live), event.title);
+        setLive(Boolean(event.live));
         break;
       case "chat":
         addChat(event);
@@ -507,7 +508,6 @@
         addRecent(event);
         break;
       case "room":
-        if (event.title) $("brand-sub").textContent = event.title;
         if (event.room_id) $("live-room").textContent = `ROOM ${event.room_id}`;
         break;
       case "error":

@@ -10,7 +10,7 @@
   <div id="stage" class="stage">
     <div class="stage-scanlines" aria-hidden="true"></div>
 
-    <header class="topbar">
+    <header class="region topbar" data-region="top">
       <section class="panel brand">
         <div class="brand-icon" data-icon="grass" aria-hidden="true"></div>
         <div class="brand-copy">
@@ -48,108 +48,97 @@
       </section>
     </header>
 
-    <main class="main">
-      <section class="left-col">
-        <div class="game-frame" id="game-frame">
-          <div class="game-glow" aria-hidden="true"></div>
-          <div class="game-hole" id="game-hole">
-            <div class="game-placeholder" aria-hidden="true">
-              <div class="ph-grid"></div>
-              <div class="ph-copy">
-                <span class="ph-kicker">GAME CAPTURE</span>
-                <span class="ph-title">MINECRAFT</span>
-                <span class="ph-sub">把游戏画面放在这一层下面</span>
-              </div>
-            </div>
-            <div class="game-corner tl" aria-hidden="true"></div>
-            <div class="game-corner tr" aria-hidden="true"></div>
-            <div class="game-corner bl" aria-hidden="true"></div>
-            <div class="game-corner br" aria-hidden="true"></div>
-            <div class="game-hud">
-              <div class="game-rec"><span class="rec-dot"></span>REC <span class="game-fps">90 FPS</span></div>
-              <div class="game-level">LEVEL <b>42</b></div>
-            </div>
-          </div>
-          <svg class="game-border" viewBox="0 0 1680 945" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#ff3d81"/>
-                <stop offset="22%" stop-color="#ffb347"/>
-                <stop offset="42%" stop-color="#ffe66d"/>
-                <stop offset="60%" stop-color="#4dffb8"/>
-                <stop offset="78%" stop-color="#4db8ff"/>
-                <stop offset="100%" stop-color="#b56bff"/>
-              </linearGradient>
-            </defs>
-            <path d="M24 6 H1656 V24 H1674 V921 H1656 V939 H24 V921 H6 V24 H24 Z"
-                  fill="none" stroke="url(#rainbow)" stroke-width="6" shape-rendering="crispEdges"/>
-            <path d="M30 12 H1650 V30 H1668 V915 H1650 V933 H30 V915 H12 V30 H30 Z"
-                  fill="none" stroke="rgba(4,8,14,.85)" stroke-width="2" shape-rendering="crispEdges"/>
-          </svg>
-          <div class="game-corner-pixel p1" aria-hidden="true"></div>
-          <div class="game-corner-pixel p2" aria-hidden="true"></div>
-          <div class="game-corner-pixel p3" aria-hidden="true"></div>
-          <div class="game-corner-pixel p4" aria-hidden="true"></div>
+    <!-- 游戏画面洞：完全透明，OBS 里把游戏采集放在这一层下面 -->
+    <div class="region game-frame" data-region="game">
+      <div class="game-glow" aria-hidden="true"></div>
+      <div class="game-hole" id="game-hole"></div>
+      <div class="game-border" aria-hidden="true"></div>
+      <div class="game-corner tl" aria-hidden="true"></div>
+      <div class="game-corner tr" aria-hidden="true"></div>
+      <div class="game-corner bl" aria-hidden="true"></div>
+      <div class="game-corner br" aria-hidden="true"></div>
+      <div class="game-pixel p1" aria-hidden="true"></div>
+      <div class="game-pixel p2" aria-hidden="true"></div>
+      <div class="game-pixel p3" aria-hidden="true"></div>
+      <div class="game-pixel p4" aria-hidden="true"></div>
+      <div class="game-placeholder" aria-hidden="true">
+        <div class="ph-grid"></div>
+        <div class="ph-copy">
+          <span class="ph-kicker">GAME CAPTURE</span>
+          <span class="ph-title">MINECRAFT</span>
+          <span class="ph-sub">把游戏画面放在这一层下面</span>
         </div>
+      </div>
+      <div class="game-hud">
+        <div class="game-rec"><span class="rec-dot"></span>REC <span class="game-fps">90 FPS</span></div>
+        <div class="game-level">LEVEL <b>42</b></div>
+      </div>
+      <div class="guide-tag" data-guide="game">游戏画面</div>
+    </div>
 
-        <section class="panel hotbar">
-          <div class="hotbar-top">
-            <div class="hearts" id="hearts" aria-label="生命值"></div>
-            <div class="xp">
-              <div class="xp-label">LV <b>42</b></div>
-              <div class="xp-track"><div class="xp-fill"></div></div>
-            </div>
-            <div class="hunger" id="hunger" aria-label="饥饿值"></div>
-          </div>
-          <div class="held-name" id="held-name">钻石剑</div>
-          <div class="slots" id="hotbar-slots"></div>
-        </section>
-      </section>
+    <!-- 小人位：同样透明，留给虚拟人物 / PNGTuber -->
+    <div class="region avatar-slot" data-region="avatar">
+      <div class="avatar-frame" aria-hidden="true"></div>
+      <div class="avatar-label">
+        <span>虚拟人物</span>
+        <small>AVATAR</small>
+      </div>
+    </div>
 
-      <aside class="right-col">
-        <section class="panel recent">
-          <div class="panel-head">
-            <span class="head-icon" data-icon="chest" aria-hidden="true"></span>
-            <h2>RECENT ITEMS</h2>
-            <span class="head-sub">最近的掉落</span>
-          </div>
-          <div class="recent-list" id="recent-list"></div>
-        </section>
+    <section class="region panel hotbar" data-region="hotbar">
+      <div class="hotbar-top">
+        <div class="hearts" id="hearts" aria-label="生命值"></div>
+        <div class="xp">
+          <div class="xp-label">LV <b>42</b></div>
+          <div class="xp-track"><div class="xp-fill"></div></div>
+        </div>
+        <div class="hunger" id="hunger" aria-label="饥饿值"></div>
+      </div>
+      <div class="held-name" id="held-name">钻石剑</div>
+      <div class="slots" id="hotbar-slots"></div>
+    </section>
 
-        <section class="panel chat">
-          <div class="panel-head">
-            <span class="live-dot chat-dot" id="chat-dot"></span>
-            <h2>CHAT</h2>
-            <span class="head-sub" id="chat-status">等待弹幕桥接</span>
-            <span class="head-time" id="chat-time">--:--</span>
-          </div>
-          <div class="chat-list" id="chat-list"></div>
-          <div class="chat-foot">
-            <span id="chat-foot-text">BILIBILI LIVE</span>
-            <span class="conn" id="conn"><i></i><span id="conn-text">未连接</span></span>
-          </div>
-        </section>
+    <section class="region panel recent" data-region="recent">
+      <div class="panel-head">
+        <span class="head-icon" data-icon="chest" aria-hidden="true"></span>
+        <h2>RECENT ITEMS</h2>
+        <span class="head-sub">最近的掉落</span>
+      </div>
+      <div class="recent-list" id="recent-list"></div>
+    </section>
 
-        <section class="panel stats">
-          <div class="stat">
-            <span class="stat-icon" data-icon="compass" aria-hidden="true"></span>
-            <div><b id="stat-coords">128 / 64 / -342</b><span>坐标</span></div>
-          </div>
-          <div class="stat">
-            <span class="stat-icon" data-icon="grass" aria-hidden="true"></span>
-            <div><b id="stat-biome">主世界</b><span>维度</span></div>
-          </div>
-          <div class="stat">
-            <span class="stat-icon" data-icon="clock" aria-hidden="true"></span>
-            <div><b id="stat-clock">夜晚</b><span>时间</span></div>
-          </div>
-          <div class="stat">
-            <span class="stat-icon" data-icon="diamond" aria-hidden="true"></span>
-            <div><b id="stat-diamonds">42</b><span>钻石</span></div>
-          </div>
-        </section>
-      </aside>
-    </main>
+    <section class="region panel chat" data-region="chat">
+      <div class="panel-head">
+        <span class="live-dot chat-dot" id="chat-dot"></span>
+        <h2>CHAT</h2>
+        <span class="head-sub" id="chat-status">等待弹幕桥接</span>
+        <span class="head-time" id="chat-time">--:--</span>
+      </div>
+      <div class="chat-list" id="chat-list"></div>
+      <div class="chat-foot">
+        <span id="chat-foot-text">BILIBILI LIVE</span>
+        <span class="conn" id="conn"><i></i><span id="conn-text">未连接</span></span>
+      </div>
+    </section>
+
+    <section class="region panel stats" data-region="stats">
+      <div class="stat">
+        <span class="stat-icon" data-icon="compass" aria-hidden="true"></span>
+        <div><b id="stat-coords">128 / 64 / -342</b><span>坐标</span></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon" data-icon="grass" aria-hidden="true"></span>
+        <div><b id="stat-dimension">主世界</b><span>维度</span></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon" data-icon="clock" aria-hidden="true"></span>
+        <div><b id="stat-clock">夜晚</b><span>时间</span></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon" data-icon="diamond" aria-hidden="true"></span>
+        <div><b id="stat-diamonds">42</b><span>钻石</span></div>
+      </div>
+    </section>
   </div>
 
   <script src="config.js"></script>

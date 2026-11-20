@@ -381,6 +381,27 @@ const ICON_DEFS = {
       "................"
     ]
   },
+  cube: {
+    palette: { a: "#59636e", b: "#8a96a3", c: "#6e7a87", d: "#3f4851" },
+    rows: [
+      "................",
+      "..aaaaaaaaaaaa..",
+      "..abbbbbbbbbca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..abccccccccca..",
+      "..adddddddddda..",
+      "..aaaaaaaaaaaa..",
+      "................",
+      "................"
+    ]
+  },
   chat: {
     palette: { a: "#6fe7ff", b: "#0f2236", c: "#d8ffff" },
     rows: [

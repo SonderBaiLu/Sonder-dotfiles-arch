@@ -11,8 +11,9 @@ use axum::{
         ws::{Message, WebSocket, WebSocketUpgrade},
         State,
     },
+    http::StatusCode,
     response::IntoResponse,
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
 use futures_util::{SinkExt, StreamExt};
@@ -103,6 +104,7 @@ async fn main() -> Result<()> {
     let app = Router::new()
         .route("/ws", get(ws_handler))
         .route("/api/status", get(api_status))
+        .route("/api/event", post(ingest_event))
         .fallback_service(ServeDir::new(web_dir()))
         .with_state(state);
 
@@ -192,6 +194,24 @@ async fn handle_socket(mut socket: WebSocket, state: AppState) {
 
 async fn api_status(State(state): State<AppState>) -> impl IntoResponse {
     Json(status_json(&state.status.borrow()))
+}
+
+/// 本地游戏数据入口：KubeJS 通过 POST 把 recent_item / stats / hotbar 事件送进来，
+/// 再经广播通道转给 OBS 浏览器源。只监听 127.0.0.1，不对外暴露。
+async fn ingest_event(
+    State(state): State<AppState>,
+    Json(value): Json<Value>,
+) -> impl IntoResponse {
+    let event_type = value.get("type").and_then(Value::as_str);
+    if matches!(
+        event_type,
+        Some("recent_item") | Some("stats") | Some("hotbar") | Some("player")
+    ) {
+        let _ = state.tx.send(value.to_string());
+        StatusCode::NO_CONTENT
+    } else {
+        StatusCode::BAD_REQUEST
+    }
 }
 
 fn status_json(status: &BridgeStatus) -> Value {

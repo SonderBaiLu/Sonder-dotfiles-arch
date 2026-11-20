@@ -9,7 +9,8 @@
 | 路径 | 作用 |
 | --- | --- |
 | `web/` | 覆盖层 HTML / CSS / JS、像素图标、Fusion Pixel 字体 |
-| `src/main.rs` | B 站弹幕桥接 + 本地 HTTP / WebSocket 服务 |
+| `src/main.rs` | B 站弹幕桥接 + 本地 HTTP / WebSocket / 游戏事件入口 |
+| `kubejs/server_scripts/obs_overlay.js` | KubeJS 真实数据脚本（坐标/维度/快捷栏/拾取） |
 | `config.toml` | 本地配置（已 gitignore），填直播间房号 |
 | `config.example.toml` | 配置模板 |
 | `systemd/obs-overlay-bridge.service` | 用户级 systemd 单元 |
@@ -60,7 +61,7 @@ http://127.0.0.1:9100/
 - `web/config.js`：标题、副标题、房间号显示、BGM 占位、物品栏 9 格、最近获得列表。
 - `web/style.css`：颜色、尺寸、边框。主要变量在 `:root`，例如 `--accent`（草绿）、`--gold`、`--red`。
 - 字体是 [Fusion Pixel](https://github.com/TakWolf/fusion-pixel-font) 12px，OFL 许可，许可证在 `web/fonts/OFL.txt`。
-- 底部 HUD 目前是**装饰性**的；要接真实背包/坐标/成就，需要在桥接里加数据源（mod、RCON 或日志解析），前端事件接口已经留好：`recent_item`、`stats`。
+- 最近获得/坐标/物品栏默认是**装饰性**的；要接真实数据见下面「真实游戏数据（KubeJS）」。
 - BGM：桥接每 4 秒调用一次 `playerctl metadata --format '{{artist}} - {{title}}'`；装了 `playerctl` 且有播放器就会自动更新，否则显示 `config.js` 里的 `bgm`。
 
 ## B 站弹幕桥接
@@ -72,6 +73,29 @@ http://127.0.0.1:9100/
 - 如果 B 站以后改协议，可以换用 [blivechat](https://github.com/xfgryujk/blivechat)（或 [DoodleBears 改版](https://github.com/DoodleBears/blivechat)）作为备用后端；本覆盖层的 `/ws` 事件格式很简单，写个适配器即可。
 
 `config.toml` 已经在 `.gitignore` 里，不会把房号提交进仓库；模板是 `config.example.toml`。
+
+## 真实游戏数据（KubeJS）
+
+默认最近获得、坐标/维度、底部快捷栏都是装饰性数据。接真实数据：
+
+1. 把 `kubejs/server_scripts/obs_overlay.js` 复制到整合包实例的 `kubejs/server_scripts/`。
+2. 重启桥接（新版本包含 `POST /api/event`）：
+   ```bash
+   systemctl --user restart obs-overlay-bridge.service
+   ```
+3. 游戏里执行 `/kubejs reload server_scripts`（如果不行用 `/reload`）。
+4. 桥上会每秒收到坐标/维度/昼夜；快捷栏 9 格、选中格和数量变化时更新；拾取物品立即进「最近获得」。
+
+事件格式（桥接会原样广播给 `/ws`）：
+
+```json
+{"type":"stats","x":128,"y":64,"z":-342,"biome":"主世界","day":false,"dimension":"overworld"}
+{"type":"hotbar","selected":1,"items":[{"icon":"sword","name":"钻石剑","count":1}]}
+{"type":"recent_item","icon":"diamond","name":"钻石","count":8,"source":"刚拾取"}
+```
+
+- 只适用于**游戏和桥接在同一台机器**的单人/本机服务端；远程服务器需要把脚本里的 `BRIDGE_URL` 改成客户端可达的地址。
+- 物品图标是覆盖层自己画的像素图；脚本会把常见物品映射到图标，未识别的物品用通用方块图标。
 
 ## systemd（可选）
 

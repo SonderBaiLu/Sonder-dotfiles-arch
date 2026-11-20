@@ -79,6 +79,9 @@
   ];
 
   let selectedSlot = 0;
+  let hotbarItems = Array.isArray(CFG.hotbar) ? CFG.hotbar : [];
+  let worldTimeKnown = false;
+  let realData = false;
   let live = false;
   let uptimeSeconds = 0;
   let online = 0;
@@ -141,7 +144,9 @@
     const ss = String(now.getSeconds()).padStart(2, "0");
     $("clock").textContent = `${hh}:${mm}:${ss}`;
     $("chat-time").textContent = `${hh}:${mm}`;
-    $("stat-clock").textContent = now.getHours() >= 18 || now.getHours() < 6 ? "夜晚" : "白天";
+    if (!worldTimeKnown) {
+      $("stat-clock").textContent = now.getHours() >= 18 || now.getHours() < 6 ? "夜晚" : "白天";
+    }
   }
 
   function updateUptime() {
@@ -190,37 +195,62 @@
     if (typeof data.online === "number") online = data.online;
     if (typeof data.watched === "number") watched = data.watched;
     if (typeof data.uptime === "number") uptimeSeconds = data.uptime;
+    if (
+      typeof data.x === "number" &&
+      typeof data.y === "number" &&
+      typeof data.z === "number"
+    ) {
+      $("stat-coords").textContent = `${data.x} / ${data.y} / ${data.z}`;
+    }
+    if (typeof data.biome === "string" && data.biome) {
+      $("stat-biome").textContent = data.biome;
+    }
+    if (typeof data.day === "boolean") {
+      worldTimeKnown = true;
+      $("stat-clock").textContent = data.day ? "白天" : "夜晚";
+    }
+    if (!realData && typeof data.x === "number") {
+      // 收到第一份真实坐标后，清掉最近获得的示例数据，避免真假混在一起。
+      realData = true;
+      renderRecent([]);
+    }
     updateUptime();
   }
 
   /* ---------------- 物品栏 ---------------- */
 
-  function renderHotbar() {
+  function renderHotbar(items = hotbarItems, selected = selectedSlot) {
+    hotbarItems = Array.isArray(items) ? items : [];
     clearNode(hotbarSlots);
-    const items = Array.isArray(CFG.hotbar) ? CFG.hotbar : [];
-    items.slice(0, 9).forEach((item, index) => {
+    hotbarItems.slice(0, 9).forEach((item, index) => {
       const slot = document.createElement("div");
       slot.className = "slot";
       slot.dataset.index = String(index);
-      slot.innerHTML = window.iconSvg(item.icon);
+      slot.innerHTML = item && item.icon ? window.iconSvg(item.icon) : "";
 
       const count = document.createElement("span");
       count.className = "count";
-      count.textContent = item.count > 1 ? String(item.count) : "";
+      count.textContent = item && item.count > 1 ? String(item.count) : "";
       slot.appendChild(count);
 
       slot.addEventListener("click", () => selectSlot(index));
       hotbarSlots.appendChild(slot);
     });
-    selectSlot(0);
+    const index = Number.isInteger(selected) ? selected : 0;
+    selectSlot(Math.max(0, Math.min(8, index)));
   }
 
   function selectSlot(index) {
     selectedSlot = index;
     const items = hotbarSlots.querySelectorAll(".slot");
     items.forEach((slot, i) => slot.classList.toggle("selected", i === index));
-    const item = (CFG.hotbar || [])[index];
-    if (item) $("held-name").textContent = item.name;
+    const item = hotbarItems[index];
+    $("held-name").textContent = item && item.name ? item.name : "空手";
+  }
+
+  function updateHotbar(data) {
+    if (!Array.isArray(data.items)) return;
+    renderHotbar(data.items, Number.isInteger(data.selected) ? data.selected : selectedSlot);
   }
 
   function renderBars() {
@@ -521,6 +551,9 @@
       case "recent_item":
         addRecent(event);
         break;
+      case "hotbar":
+        updateHotbar(event);
+        break;
       case "room":
         setRoomId(event.room_id);
         break;
@@ -604,7 +637,8 @@
 
     window.setInterval(() => {
       if (!demo) return;
-      selectSlot((selectedSlot + 1) % (CFG.hotbar || []).length);
+      if (hotbarItems.length === 0) return;
+      selectSlot((selectedSlot + 1) % hotbarItems.length);
     }, 4200);
 
     if (demo) {

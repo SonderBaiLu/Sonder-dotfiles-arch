@@ -158,7 +158,7 @@
     const avatarLabel = document.querySelector(".avatar-label span");
     if (avatarLabel && currentLayout.avatar) {
       const a = currentLayout.avatar;
-      avatarLabel.textContent = `虚拟人物 ${a.w}×${a.h}`;
+      avatarLabel.textContent = `人物位 ${a.w}×${a.h} · ${a.x},${a.y}`;
     }
   }
 
@@ -346,9 +346,16 @@
     return row;
   }
 
+  function recentCapacity() {
+    const rect = currentLayout && currentLayout.recent;
+    if (!rect) return 5;
+    // 面板头 64 + 内边距 16，每行约 66
+    return Math.max(3, Math.floor((rect.h - 90) / 66));
+  }
+
   function renderRecent(items) {
     clearNode(recentList);
-    (items || []).slice(0, 6).forEach((item) => {
+    (items || []).slice(0, recentCapacity()).forEach((item) => {
       recentList.appendChild(recentRow(item, false));
     });
     const first = recentList.firstElementChild;
@@ -362,7 +369,8 @@
     if (!item || !item.name) return;
     const row = recentRow(item, true);
     recentList.prepend(row);
-    while (recentList.children.length > 6) {
+    const cap = recentCapacity();
+    while (recentList.children.length > cap) {
       recentList.removeChild(recentList.lastChild);
     }
     window.setTimeout(() => row.classList.remove("new"), 2200);

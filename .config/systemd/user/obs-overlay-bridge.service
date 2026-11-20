@@ -1,0 +1,14 @@
+[Unit]
+Description=B站弹幕桥接 / OBS 覆盖层本地服务
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Sonder-dotfiles-arch/tools/obs-overlay
+ExecStart=%h/Sonder-dotfiles-arch/tools/obs-overlay/target/release/obs-overlay-bridge
+Restart=always
+RestartSec=5
+Environment=RUST_LOG=obs_overlay_bridge=info,tower_http=warn
+
+[Install]
+WantedBy=default.target

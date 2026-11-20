@@ -131,8 +131,7 @@
     $("brand-title").textContent = CFG.title || "THE FOOL";
     $("brand-sub").textContent = CFG.subtitle || "落幕曲 · 日常随机";
     $("nowplaying").textContent = CFG.bgm || "C418 - Sweden";
-    $("live-room").textContent = `ROOM ${CFG.roomId || "----"}`;
-    $("chat-foot-text").textContent = `BILIBILI LIVE · ROOM ${CFG.roomId || "----"}`;
+    setRoomId(CFG.roomId);
   }
 
   function updateClock() {
@@ -158,9 +157,18 @@
     $("live-label").textContent = live ? "LIVE" : "OFFLINE";
     if (!live) {
       $("chat-status").textContent = "主播未开播";
-    } else if ($("chat-status").textContent === "主播未开播") {
-      $("chat-status").textContent = "直播中";
+    } else {
+      const waiting = ["主播未开播", "已连接 · 等待开播", "连接弹幕中", "等待弹幕桥接"];
+      if (waiting.includes($("chat-status").textContent)) {
+        $("chat-status").textContent = "直播中";
+      }
     }
+  }
+
+  function setRoomId(roomId) {
+    if (!roomId) return;
+    $("live-room").textContent = `ROOM ${roomId}`;
+    $("chat-foot-text").textContent = `BILIBILI LIVE · ROOM ${roomId}`;
   }
 
   function setNowPlaying(text) {
@@ -477,7 +485,7 @@
       case "status":
         setConnection(Boolean(event.connected), event.connected ? "已连接" : "未连接");
         setStats(event);
-        if (event.room_id) $("live-room").textContent = `ROOM ${event.room_id}`;
+        setRoomId(event.room_id);
         if (typeof event.live === "boolean") setLive(event.live);
         break;
       case "live":
@@ -508,7 +516,7 @@
         addRecent(event);
         break;
       case "room":
-        if (event.room_id) $("live-room").textContent = `ROOM ${event.room_id}`;
+        setRoomId(event.room_id);
         break;
       case "error":
         setChatStatus(event.message || "桥接异常");

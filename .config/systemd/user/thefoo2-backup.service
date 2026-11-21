@@ -1,0 +1,8 @@
+[Unit]
+Description=Backup TheFoo2 Minecraft world (btrfs reflink)
+
+[Service]
+Type=oneshot
+ExecStart=/home/qicat/Documents/Minecraft/Server/TheFoo2/backup-world.sh
+Nice=19
+IOSchedulingClass=idle

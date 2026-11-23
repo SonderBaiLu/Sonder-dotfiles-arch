@@ -98,7 +98,7 @@ bootstrap.sh          # 全新系统引导：装构建依赖 → 编译 → 部�
   alacritty/          # Alacritty 配置与主题
   wallust/            # 壁纸取色（wallust.toml + templates）
   noctalia/           # Noctalia 外壳调色板
-  nvim/               # NvChad 配置
+  nvim/               # 自建 Neovim 配置（blink.cmp + fzf-lua + neo-tree + snacks）
   fish/               # fish shell 配置
   fastfetch/          # fastfetch 配置与 logo
   fcitx5/             # 输入法配置（profile / config / conf，不含运行时缓存）
@@ -238,7 +238,7 @@ flowchart TB
 | `environment.d/` | systemd 用户会话环境变量（输入法） | `im.conf` | 重新登录（systemd 用户管理器重建环境） |
 | `noctalia/` | Noctalia 外壳的调色/状态栏覆盖 | `bar.toml`、`palettes/sllh-mc.json` | noctalia 热重载（自动） |
 | `wallust/` | 壁纸取色配置与模板 | `wallust.toml`、`templates/` | 下次换壁纸时经 `WallustAwww.sh` 生效 |
-| `nvim/` | NvChad 定制版 | `lua/` | 重开 nvim |
+| `nvim/` | 自建 Neovim 配置（LSP/补全/文件树/界面） | `init.lua`、`lua/` | 重开 nvim |
 | `fastfetch/` | 终端系统信息展示 | config + logo | 下次运行 |
 | `libreoffice/` | 仅跟踪 `4/user/config/`（Catppuccin 调色板） | `catppuccin-frappe-blue.soc` | 重开 LibreOffice；调色板在颜色选择器里重选一次 |
 | `systemd/` | 用户服务单元（仅 `aria2`、`protonplus.service/.timer`） | `user/*.service|*.timer` | `systemctl --user daemon-reload` |

@@ -10,7 +10,7 @@
 |合成器/外壳 |Hyprland（原生 Lua 配置）+ noctalia
 |终端 |alacritty-smooth-cursor-git
 |shell |fish（tide 提示符、catppuccin 主题、fisher 管插件）
-|编辑器 |Neovim —— NvChad 定制版（弃 LazyVim）；另有 helix/nv 配置在仓库
+|编辑器 |Neovim —— 自建配置（弃 NvChad）；另有 helix 配置在仓库
 |文件管理 |nautilus（SUPER+E）
 |输入法 |fcitx5 全家桶
 |通知/锁屏/Polkit/启动器 |noctalia 内置
@@ -45,7 +45,7 @@
 |wayvnc |不用远程桌面 |ToDesk
 |cosmic-* |整套装过又卸 |nautilus + GTK portal
 |gnome-system-monitor |有 Mission Center 了 |Mission Center
-|LazyVim |全面拥抱 NvChad |NvChad
+|LazyVim / NvChad |先弃 LazyVim 转 NvChad，后为完全掌控改为自建配置 |自建配置
 |openclaw |卸载干净（pnpm 路径断链教训） |—
 |virt-manager / libvirt |VM 测试放弃时卸栈（2026-10-25）；游戏 VFIO 2026-11-08 也未采用 |真要 VM 再议
 |===

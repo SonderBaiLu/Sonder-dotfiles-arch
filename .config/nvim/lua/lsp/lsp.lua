@@ -38,6 +38,11 @@ return {
       auto_update = false, -- 不自动升级工具版本，保持稳定
       run_on_start = true, -- nvim 启动时自动补装缺失的工具
     },
+    -- 插件自带的 VimEnter 钩子在 VeryLazy 加载时已经错过，必须手动触发首次检查
+    config = function(_, opts)
+      require("mason-tool-installer").setup(opts)
+      require("mason-tool-installer").run_on_start()
+    end,
   },
 
   -- LSP 客户端配置

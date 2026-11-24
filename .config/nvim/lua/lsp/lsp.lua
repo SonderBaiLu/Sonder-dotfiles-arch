@@ -1,7 +1,7 @@
 return {
   -- 统一安装/管理各类 language server
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim", -- 官方仓库已从 williamboman 迁到 mason-org
     build = ":MasonUpdate",
     cmd = "Mason",
     opts = {},
@@ -9,13 +9,14 @@ return {
 
   -- mason 与 lspconfig 之间的桥；ensure_installed 可自动装 LSP
   {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = { "williamboman/mason.nvim" },
+    "mason-org/mason-lspconfig.nvim",
+    dependencies = { "mason-org/mason.nvim" },
     opts = {
       ensure_installed = {
         "lua_ls", -- 配 nvim 自己的 lua（写配置时补全/诊断）
         "vtsls",  -- TypeScript 客户端：vue_ls 的硬性依赖（Volar 需要它处理 script 部分）
         "vue_ls", -- Vue 官方的 Volar：模板语法、组件跳转、标签补全
+        "html",   -- HTML LSP：标签/属性补全（之前漏了它，重装后不会自动装）
       },
     },
   },
@@ -50,8 +51,8 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
+      "mason-org/mason.nvim",
+      "mason-org/mason-lspconfig.nvim",
       "saghen/blink.cmp",
     },
     config = function()
@@ -92,7 +93,7 @@ return {
               globalPlugins = { -- 让 TS 服务认识 Vue 语法
                 {
                   name = "@vue/typescript-plugin", -- Vue 官方 TS 插件
-                  location = vim.fn.expand("~/.local/share/nv/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin"), -- 插件实际位置
+                  location = vim.fn.stdpath("data") .. "/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin", -- 用 stdpath 取实际数据目录（旧配置硬编码了 ~/.local/share/nv，那是残留的旧 app 目录）
                   languages = { "vue" }, -- 只对 .vue 生效
                 },
               },

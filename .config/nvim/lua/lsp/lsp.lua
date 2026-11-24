@@ -103,7 +103,9 @@ return {
 
       -- Rust 使用 rustup 已安装的 rust-analyzer（无需 Mason 重复安装）。
       -- vue_ls 依赖 vtsls 已附加，否则会报 Could not find ts_ls/vtsls。
-      vim.lsp.enable({ "vtsls", "vue_ls", "rust_analyzer" })
+      -- 启用 html：提供 HTML 标签/属性补全（严格校验交给 nvim-lint + html-validate）
+      -- 标签自动闭合/重命名由 nvim-ts-autotag 负责，跟这里无关
+      vim.lsp.enable({ "vtsls", "vue_ls", "rust_analyzer", "html" })
     end,
   },
 }

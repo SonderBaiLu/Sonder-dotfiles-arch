@@ -63,19 +63,30 @@ return {
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(ev)
           local buf = ev.buf
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
           local function map(keys, fn, desc)
             vim.keymap.set("n", keys, fn, { buffer = buf, desc = "LSP: " .. desc })
           end
+          -- 基础键位：常用 server 都支持，直接绑定
           map("gd", vim.lsp.buf.definition, "转到定义")
           map("gD", vim.lsp.buf.declaration, "转到声明")
-          map("gr", vim.lsp.buf.references, "查找引用")
           map("gi", vim.lsp.buf.implementation, "转到实现")
-          map("<leader>rn", vim.lsp.buf.rename, "重命名")
-          map("<leader>ca", vim.lsp.buf.code_action, "代码操作")
           map("K", vim.lsp.buf.hover, "悬浮文档")
           map("<leader>df", vim.diagnostic.open_float, "诊断详情")
           map("[d", vim.diagnostic.goto_prev, "上一个诊断")
           map("]d", vim.diagnostic.goto_next, "下一个诊断")
+          -- 能力绑定：server 不支持的方法不注册键位，
+          -- 避免按了之后弹「method ... is not supported by any server」提示
+          -- （典型：html LSP 挂载了但不支持 codeAction/rename）
+          if client and client.supports_method("textDocument/references") then
+            map("gr", vim.lsp.buf.references, "查找引用")
+          end
+          if client and client.supports_method("textDocument/rename") then
+            map("<leader>rn", vim.lsp.buf.rename, "重命名")
+          end
+          if client and client.supports_method("textDocument/codeAction") then
+            map("<leader>ca", vim.lsp.buf.code_action, "代码操作")
+          end
         end,
       })
 

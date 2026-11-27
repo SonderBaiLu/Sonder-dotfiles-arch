@@ -60,3 +60,116 @@ map("n", "<leader>zR", "zR", { desc = "展开全部代码块" })
 -- 保存 / 退出
 map("n", "<leader>w", "<cmd>w<CR>", { desc = "保存" })
 map("n", "<leader>q", "<cmd>q<CR>", { desc = "退出" })
+
+-- 内置键位描述汉化：Neovim 0.12 给 LSP / 诊断 / quickfix / 树节点等内置功能注册了
+-- 带英文描述的真实映射，matchit 等运行时插件也会注册无描述的映射，快捷键看板里显示英文。
+-- 这里取出原映射的实现重新注册，只换中文描述，行为完全不变。
+-- 触发时机：真实使用走 VimEnter；--headless（无 UI）不触发 VimEnter，用延迟执行兜底。
+local function apply_cn()
+  local function cn(modes, lhs, desc)
+      for _, mode in ipairs(type(modes) == "table" and modes or { modes }) do
+        local m = vim.fn.maparg(lhs, mode, false, true)
+        if m and not vim.tbl_isempty(m) then
+          if m.callback then
+            vim.keymap.set(mode, lhs, m.callback, { desc = desc })
+          elseif m.rhs and m.rhs ~= "" then
+            vim.keymap.set(mode, lhs, m.rhs, { desc = desc })
+          end
+        end
+      end
+    end
+
+    -- 括号 / 替换 / 复制 / 空行
+    cn({ "n", "x" }, "%", "匹配括号")
+    cn("n", "&", "重复上次替换")
+    cn("n", "Y", "复制到行尾")
+    cn("n", "[%", "上一个未匹配括号")
+    cn("n", "]%", "下一个未匹配括号")
+    cn("n", "[ ", "上方插入空行")
+    cn("n", "] ", "下方插入空行")
+
+    -- 缓冲区跳转
+    cn("n", "[b", "上一个缓冲区")
+    cn("n", "]b", "下一个缓冲区")
+    cn("n", "[B", "第一个缓冲区")
+    cn("n", "]B", "最后一个缓冲区")
+
+    -- 参数列表跳转
+    cn("n", "[a", "上一个参数文件")
+    cn("n", "]a", "下一个参数文件")
+    cn("n", "[A", "第一个参数文件")
+    cn("n", "]A", "最后一个参数文件")
+
+    -- quickfix 修复列表
+    cn("n", "[q", "上一个修复项")
+    cn("n", "]q", "下一个修复项")
+    cn("n", "[Q", "第一个修复项")
+    cn("n", "]Q", "最后一个修复项")
+    cn("n", "[<C-Q>", "上一个修复文件")
+    cn("n", "]<C-Q>", "下一个修复文件")
+
+    -- 位置列表
+    cn("n", "[l", "上一个位置项")
+    cn("n", "]l", "下一个位置项")
+    cn("n", "[L", "第一个位置项")
+    cn("n", "]L", "最后一个位置项")
+    cn("n", "[<C-L>", "上一个位置文件")
+    cn("n", "]<C-L>", "下一个位置文件")
+
+    -- 标签跳转
+    cn("n", "[T", "第一个标签")
+    cn("n", "]T", "最后一个标签")
+    cn("n", "[<C-T>", "上一个预览标签")
+    cn("n", "]<C-T>", "下一个预览标签")
+
+    -- 诊断跳转
+    cn("n", "[d", "上一个诊断")
+    cn("n", "]d", "下一个诊断")
+    cn("n", "[D", "第一个诊断")
+    cn("n", "]D", "最后一个诊断")
+    cn("n", "<C-W>d", "悬浮诊断详情")
+    cn("n", "<C-W><C-D>", "悬浮诊断详情")
+
+    -- LSP 默认键位
+    cn("n", "gO", "文档符号列表")
+    cn("n", "grt", "转到类型定义")
+    cn("n", "gri", "转到实现")
+    cn("n", "grr", "查找引用")
+    cn("n", "grx", "运行代码镜头")
+    cn({ "n", "x" }, "gra", "代码操作")
+    cn("n", "grn", "重命名符号")
+
+    -- 注释与打开链接
+    cn({ "n", "x" }, "gcc", "注释/取消当前行")
+    cn({ "n", "x" }, "gc", "注释操作符")
+    cn({ "n", "x" }, "gx", "打开光标下链接")
+
+    -- 插入模式内置键位
+    cn("i", "<C-S>", "签名帮助")
+    cn("i", "<Tab>", "跳到下一个占位符")
+    cn("i", "<S-Tab>", "跳到上一个占位符")
+    cn("i", "<C-W>", "删除光标前一词")
+    cn("i", "<C-U>", "删除到行首")
+
+    -- 可视模式内置键位
+    cn("x", "#", "查找光标词(向上)")
+    cn("x", "*", "查找光标词(向下)")
+    cn("x", "@", "对选区执行宏")
+    cn("x", "Q", "重复命令作用于选区")
+    cn("s", "<Tab>", "跳到下一个占位符")
+    cn("s", "<S-Tab>", "跳到上一个占位符")
+    cn("s", "<C-S>", "签名帮助")
+
+    -- 树节点选择（0.12 内置 treesitter 增选）
+    cn("x", "[n", "上一个节点")
+    cn("x", "]n", "下一个节点")
+    cn("x", "[N", "上一个兄弟节点")
+    cn("x", "]N", "下一个兄弟节点")
+    cn("x", "an", "外层节点增选")
+    cn("x", "in", "内层节点增选")
+    cn("x", "a%", "外层匹配块")
+    cn("x", "g%", "反向匹配括号")
+end
+
+vim.api.nvim_create_autocmd("VimEnter", { once = true, callback = apply_cn })
+vim.defer_fn(apply_cn, 1500) -- --headless 无 UI 不触发 VimEnter，延迟兜底；重注册幂等

@@ -81,10 +81,13 @@ local function apply_cn()
 
     -- 括号 / 替换 / 复制 / 空行
     cn({ "n", "x" }, "%", "匹配括号")
+    cn("n", "g%", "反向匹配括号")
     cn("n", "&", "重复上次替换")
     cn("n", "Y", "复制到行尾")
     cn("n", "[%", "上一个未匹配括号")
     cn("n", "]%", "下一个未匹配括号")
+    cn("x", "[%", "上一个未匹配括号")
+    cn("x", "]%", "下一个未匹配括号")
     cn("n", "[ ", "上方插入空行")
     cn("n", "] ", "下方插入空行")
 
@@ -172,4 +175,8 @@ local function apply_cn()
 end
 
 vim.api.nvim_create_autocmd("VimEnter", { once = true, callback = apply_cn })
-vim.defer_fn(apply_cn, 1500) -- --headless 无 UI 不触发 VimEnter，延迟兜底；重注册幂等
+-- matchit 等运行时插件是延迟加载的，启动几秒后会重新注册映射盖掉中文描述，
+-- 这里分多轮幂等重跑兜底；真实使用走 VimEnter 时插件已加载完毕，一轮即可。
+vim.defer_fn(apply_cn, 1500)
+vim.defer_fn(apply_cn, 4500)
+vim.defer_fn(apply_cn, 9000)

@@ -1,0 +1,43 @@
+# 平滑光标版 Alacritty 专用配置
+# 来自 GregTheMadMonk/alacritty-smooth-cursor（patch/smooth-cursor 分支）
+# 官方 Alacritty 不认识下面的 smooth_motion 选项，所以单独放一份。
+
+[env]
+NVIM_NOTTYFAST = "1"
+
+[window]
+title = "Sonder · Neovim (平滑光标)"
+opacity = 1.0  # 完全不透明，避免桌面干扰阅读。
+blur = false  # 关闭背景模糊。
+padding = { x = 8, y = 6 }
+
+[colors.primary]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+
+[font]
+size = 11
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+
+[font.bold_italic]
+family = "JetBrainsMono Nerd Font"
+style = "Bold Italic"
+
+[cursor]
+smooth_motion = true
+smooth_motion_factor = 0.2
+smooth_motion_spring = 0.5
+smooth_motion_max_stretch_x = 3.0
+smooth_motion_max_stretch_y = 3.0
+smooth_motion_antijitter_ms = 50

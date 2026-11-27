@@ -26,7 +26,7 @@ return {
     "hat0uma/prelive.nvim",
     -- 只有用到这些命令或快捷键时才加载，不影响启动速度
     cmd = { "PreLiveGo", "PreLiveStatus", "PreLiveClose", "PreLiveCloseAll", "PreLiveLog" },
-    opts = {}, -- 默认端口 2255，只监听 127.0.0.1，保存后自动刷新
+    opts = { server = { host = "127.0.0.1", port = 0 } }, -- 使用本机空闲端口，多个项目可同时预览。
     keys = {
       {
         "<leader>po",

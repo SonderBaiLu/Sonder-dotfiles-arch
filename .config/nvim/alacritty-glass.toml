@@ -1,0 +1,30 @@
+# Mocha 专用窗口。使用 alacritty --config-file 指向本文件即可启用。
+[env]
+NVIM_NOTTYFAST = "1"              # 专用窗口已固定深色，跳过启动时容易超时的终端底色查询。
+
+# Windows 与 Arch 共用同一个字体家族。Mono 版本的小图标占一格，文件名能对齐。
+[font]
+size = 12.0                       # 单位是点，终端会按显示器缩放比例绘制。
+normal = { family = "JetBrainsMono Nerd Font Mono", style = "Regular" }
+bold = { family = "JetBrainsMono Nerd Font Mono", style = "Bold" }
+italic = { family = "JetBrainsMono Nerd Font Mono", style = "Italic" }
+bold_italic = { family = "JetBrainsMono Nerd Font Mono", style = "Bold Italic" }
+
+[window]
+title = "Sonder · Neovim"
+opacity = 1.0  # 完全不透明，避免桌面干扰阅读。
+blur = false  # 关闭背景模糊。
+padding = { x = 8, y = 6 }       # 留出少量边距，文件树与状态栏靠边时仍易读。
+
+[colors.primary]
+background = "#1e1e2e"            # 与 Catppuccin Mocha 的底色一致。
+foreground = "#cdd6f4"            # 终端消息和默认文字沿用 Mocha 正文颜色。
+
+# 平滑光标动画（平滑光标版 Alacritty 专用选项）
+[cursor]
+smooth_motion = true
+smooth_motion_factor = 0.2
+smooth_motion_spring = 0.5
+smooth_motion_max_stretch_x = 3.0
+smooth_motion_max_stretch_y = 3.0
+smooth_motion_antijitter_ms = 50

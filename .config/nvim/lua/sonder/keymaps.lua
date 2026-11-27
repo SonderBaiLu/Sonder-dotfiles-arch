@@ -1,5 +1,5 @@
 -- 核心键位（只用内置功能，不依赖插件）
--- 插件自己的键位写在 lua/plugins/ 对应文件里
+-- 各插件的键位随其配置声明，空格加问号可查看当前缓冲区的完整映射。
 local map = vim.keymap.set
 
 vim.g.mapleader = " "
@@ -45,8 +45,17 @@ map("n", "J", "mzJ`z", { desc = "拼接行（保持光标）" })
 -- 翻页保持居中
 map("n", "<C-d>", "<C-d>zz", { desc = "下半屏" })
 map("n", "<C-u>", "<C-u>zz", { desc = "上半屏" })
--- n / N 的「下一个/上一个匹配」键位已交给 hlslens（lua/plugins/hlslens.lua）：
--- 它能显示匹配计数并保持居中，避免两处重复定义冲突
+-- 搜索后自动展开目标折叠并居中；Vim 自带的计数仍然有效。
+map("n", "n", "nzzzv", { desc = "下一个匹配并居中" })
+map("n", "N", "Nzzzv", { desc = "上一个匹配并居中" })
+
+-- 普通模式用空格 z 管理当前窗口的折叠；小写处理光标处，大写处理整个文件。
+-- 直接映射到内置 z 命令，保留计数前缀，也可以继续使用原始键位。
+map("n", "<leader>za", "za", { desc = "切换当前代码块折叠" })
+map("n", "<leader>zc", "zc", { desc = "折叠当前代码块" })
+map("n", "<leader>zo", "zo", { desc = "展开当前代码块" })
+map("n", "<leader>zM", "zM", { desc = "折叠全部代码块" })
+map("n", "<leader>zR", "zR", { desc = "展开全部代码块" })
 
 -- 保存 / 退出
 map("n", "<leader>w", "<cmd>w<CR>", { desc = "保存" })

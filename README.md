@@ -98,7 +98,7 @@ bootstrap.sh          # 全新系统引导：装构建依赖 → 编译 → 部�
   alacritty/          # Alacritty 配置与主题
   wallust/            # 壁纸取色（wallust.toml + templates）
   noctalia/           # Noctalia 外壳调色板
-  nvim/               # 自建 Neovim 配置（blink.cmp + fzf-lua + neo-tree + snacks）
+  nvim/               # Sonder Neovim 配置（Windows/Linux 双平台，blink.cmp + snacks + LSP/补全）
   fish/               # fish shell 配置
   fastfetch/          # fastfetch 配置与 logo
   fcitx5/             # 输入法配置（profile / config / conf，不含运行时缓存）
@@ -150,7 +150,7 @@ docs/                 # 知识库（AsciiDoc）：排障结论、踩坑记录、
 
 ## Obsidian 笔记库
 
-笔记库在 `~/Obsidian/SondeNote`，**不随 dotfiles 入库**（单独的 git 仓库），nvim 的 `obsidian.nvim` 也指向这里。
+笔记库在 `~/Obsidian/SondeNote`，**不随 dotfiles 入库**（单独的 git 仓库）。
 
 - 初始化 / 恢复 + 校验：`./tools/obsidian/setup.sh`
   - 没有笔记库时，用固定 commit 的 starter vault 种一份（预配置插件 + Minimal 主题 + CSS 片段）
@@ -238,7 +238,7 @@ flowchart TB
 | `environment.d/` | systemd 用户会话环境变量（输入法） | `im.conf` | 重新登录（systemd 用户管理器重建环境） |
 | `noctalia/` | Noctalia 外壳的调色/状态栏覆盖 | `bar.toml`、`palettes/sllh-mc.json` | noctalia 热重载（自动） |
 | `wallust/` | 壁纸取色配置与模板 | `wallust.toml`、`templates/` | 下次换壁纸时经 `WallustAwww.sh` 生效 |
-| `nvim/` | 自建 Neovim 配置（LSP/补全/文件树/界面） | `init.lua`、`lua/` | 重开 nvim |
+| `nvim/` | Sonder Neovim 配置（LSP/补全/文件树/界面，Windows/Linux 双平台） | `init.lua`、`lua/sonder/` | 重开 nvim |
 | `fastfetch/` | 终端系统信息展示 | config + logo | 下次运行 |
 | `libreoffice/` | 仅跟踪 `4/user/config/`（Catppuccin 调色板） | `catppuccin-frappe-blue.soc` | 重开 LibreOffice；调色板在颜色选择器里重选一次 |
 | `systemd/` | 用户服务单元（仅 `aria2`、`protonplus.service/.timer`） | `user/*.service|*.timer` | `systemctl --user daemon-reload` |

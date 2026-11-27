@@ -8,6 +8,7 @@ end
 require("sonder.options")
 require("sonder.keymaps")
 require("sonder.html")
+require("sonder.ime").setup() -- 中英文输入法按上下文自动切换
 
 local lazypath = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy", "lazy.nvim")
 if not vim.uv.fs_stat(vim.fs.joinpath(lazypath, "lua", "lazy", "init.lua")) then

@@ -23,5 +23,7 @@ function M.check()
     if ok and query then vim.health.ok(lang)
     else vim.health.warn(lang .. " 的解析器或查询未就绪，可运行 :SonderParsers 和 :TSLog") end
   end
+
+  require("sonder.ime").check()
 end
 return M
